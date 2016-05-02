@@ -6,6 +6,8 @@ from tornado.web import URLSpec as URL
 import urllib2
 import rdflib
 import json
+import os
+
 
 ## Handler classes
 
@@ -18,14 +20,6 @@ class ResourceHandler(tornado.web.RequestHandler):
 		url = self.get_argument('url', '')
 		rdfData = performGetRequest(url)
 		rdfData = json.loads(rdfData)
-
-		for subject in rdfData: ## key = subject
-			print(subject.encode('utf-8'))
-			for prop in rdfData[subject]: ## key2 = predicate, rdfData[key][key2] = list of objectDicts (?)
-				print("--- " + prop.encode('utf-8'))
-				for i in range(0, len(rdfData[subject][prop])):
-					print("------ " + unicode(rdfData[subject][prop][i]["value"]).encode('utf-8'))
-					
 
 		# writeToFile(rdfData, 'einstein.2json')
 
@@ -50,11 +44,15 @@ def writeToFile(data, fileName):
 
 ## Tornado setup
 
+settings = {
+    "static_path": os.path.join(os.path.dirname(__file__), "static"),
+}
+
 def make_app():
 	return tornado.web.Application([
 		URL(r"/", MainHandler, name = "main"),
 		URL(r"/rdf", ResourceHandler, name = "resource"),
-	], debug = True)
+	], debug = True, **settings)
 
 if __name__ == "__main__":
 	app = make_app()
