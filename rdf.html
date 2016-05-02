@@ -16,23 +16,36 @@
 <body>
 	<div class="container">
 		<h1>RDF</h1>
+        <h2>About: <a href= "{{url}}"> {{url}} </a> </h2>
 		<table class="table">
 			<tbody>
 				{% for subject, predicateDict in rdfData.items() %}
-					{% for predicate, objectList in predicateDict.items() %}
-						{% for objectDict in objectList %}
-							<tr>
-								<td><a href="{{ subject.encode('utf-8') }}">{{ subject.encode('utf-8') }}</a></td>
-								<td><a href="{{ predicate.encode('utf-8') }}">{{ predicate.encode('utf-8') }}</a></td>
-								{% if objectDict["type"] == "uri" %}
-									<td><a href="{{ unicode(objectDict["value"]).encode('utf-8') }}"><p class="dont-break-out">{{ unicode(objectDict["value"]).encode('utf-8') }}</p></a></td>
-								{% else %}
-									<td>{{ unicode(objectDict["value"]).encode('utf-8') }}</td>
-								{% end %}
-							</tr>
-						{% end %}
-					{% end %}
-				{% end %}
+                    {% if subject == url %}
+					    {% for predicate, objectList in predicateDict.items() %}
+                            <tr>
+                                <td><a href="{{ predicate.encode('utf-8') }}">{{ predicate.encode('utf-8') }}</a></td>
+                                <td>
+                                    <ul>
+						            {% for objectDict in objectList %}
+                                        {% if objectDict["type"] == "uri" %}
+									        <li><a href="{{ unicode(objectDict["value"]).encode('utf-8') }}"><p class="dont-break-out">{{ unicode(objectDict["value"]).encode('utf-8') }}</p></a></li>
+								        {% else %}
+									        <li>{{ unicode(objectDict["value"]).encode('utf-8') }}</li>
+								        {% end %}
+						            {% end %}
+                                    </ul>
+                                </td>
+                            </tr>
+					    {% end %}
+                    {% else %}
+                        {% for predicate, objectList in predicateDict.items() %}
+                            <tr>
+                                <td> is <a href="{{ predicate.encode('utf-8') }}"> {{ predicate.encode('utf-8') }} </a> of </td>
+                                <td><ul><li><a href="{{ subject.encode('utf-8') }}">{{ subject.encode('utf-8') }}</a></li></ul></td>
+                            </tr>
+					    {% end %}
+                    {% end %}
+                {% end %}
 			</tbody>
 		</table>
 	</div>

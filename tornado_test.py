@@ -23,7 +23,7 @@ class ResourceHandler(tornado.web.RequestHandler):
 
 		# writeToFile(rdfData, 'einstein.2json')
 
-		self.render("rdf.html", rdfData = rdfData)
+		self.render("rdf.html", rdfData = rdfData, url=url)
 
 ## convenience functions
 
