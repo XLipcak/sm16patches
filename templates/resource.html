@@ -37,7 +37,7 @@
 				{% end %}						
 			</tbody>
 		</table>
-	<h3>Triples where <a href= "{{url}}"> {{url}} </a> is the subject:</h3>
+	<h3>Triples where <a href= "{{url}}"> {{url}} </a> is the object:</h3>
 		<table class="table">
 			<tbody>
 				{% for subject, predicate, object in rdfGraph.triples( (None, None, URIRef(url)) ) %}
