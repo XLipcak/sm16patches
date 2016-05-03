@@ -90,10 +90,7 @@ class PatchRequest():
         # one patch request can contain several patches - store them in the dictionary
         self.patchList = {}
 
-        patchNum = 0
-        for patch in patchRequestJson:
-            patchNum += 1
-            self.patchList[patchNum] = (Patch(patch, True))
+        
 
     def __str__(self):
         print('Printing patch request:')
@@ -111,10 +108,54 @@ class Patch():
     ##TODO: rebuild this method according to correct processing of patches and graphs and received JSON
     def __init__(self, patch, isFromJson):
 
+        patchNum = 0
+        for patch in patchRequestJson:
+            patchNum += 1
+            self.patchList[patchNum] = (Patch(patch, True))
+
+
         if not isFromJson:
             self.patchInstruction = patch
         else:
             actualPatchInstructionString = patch.get('instruction')
+
+            graph = Graph()
+            graph.add(BNode(identier.encode("utf-8"),RDF.type,URIRef("http://purl.org/hpi/patchr#Patch".encode("utf-8"))) #top layer
+            graph.add(URIRef("http://purl.org/hpi/patchr#Patch".encode("utf-8")),URIRef("http://purl.org/hpi/patchr#appliesTo".encode("utf-8")),Literal("-".encode("utf-8"))) # TODO add applies to information    
+            graph.add(URIRef("http://purl.org/hpi/patchr#Patch".encode("utf-8")),URIRef("http://purl.org/hpi/patchr#status".encode("utf-8")),URIRef("http://purl.org/hpi/patchr#Open".encode("utf-8"))) # just stick with open
+            graph.add(URIRef("http://purl.org/hpi/patchr#Patch".encode("utf-8")),URIRef("http://purl.org/hpi/patchr#update".encode("utf-8")),BNode("updateInstruction".encode("utf-8")))
+            graph.add(BNode("updateInstruction".encode("utf-8")),RDF.type,URIRef("http://webr3.org/owl/guo#UpdateInstruction".encode("utf-8")))
+            graph.add(BNode("updateInstruction".encode("utf-8")),URIRef("http://webr3.org/owl/guo#target_graph".encode("utf-8")),) #TODO read url from json)
+            graph.add(BNode("updateInstruction".encode("utf-8")),URIRef("http://webr3.org/owl/guo#target_subject".encode("utf-8")),) #TODO read subject from json)
+            graph.add(BNode("updateInstruction".encode("utf-8")),URIRef("http://webr3.org/owl/guo#delete".encode("utf-8")),BNode("deleteInstruction".encode("utf-8")))
+            graph.add(BNode("updateInstruction".encode("utf-8")),URIRef("http://webr3.org/owl/guo#insert".encode("utf-8")),BNode("insertInstruction".encode("utf-8")))
+            
+            #check json for update instruction
+            
+            for patch in patchRequestJson:
+                actualPatchInstructionString = patch.get('instruction')
+                objectType = patch.get('value').get('type')
+                if(actualPatchInstructionString == 'DELETE')
+                    if(objectType = 'Literal')
+                        graph.add(BNode("deleteInstruction"),URIRef(patch.get('predicate').encode("utf-8")),Literal(patch.get('object').encode("utf-8")))
+                    else
+                         graph.add(BNode("deleteInstruction"),URIRef(patch.get('predicate').encode("utf-8")),URIRef(patch.get('object').encode("utf-8")))
+                if(actualPatchInstructionString == 'ADD')
+                    if(objectType = 'Literal')
+                        graph.add(BNode("insertInstruction"),URIRef(patch.get('predicate').encode("utf-8")),Literal(patch.get('object').encode("utf-8")))
+                    else
+                         graph.add(BNode("insertInstruction"),URIRef(patch.get('predicate').encode("utf-8")),URIRef(patch.get('object').encode("utf-8")))
+
+            graph.add(URIRef("http://purl.org/hpi/patchr#Patch".encode("utf-8")),URIRef("http://purl.org/net/provenance/ns#wasGeneratedBy".encode("utf-8")),BNode("generatedBy".encode("utf-8")))
+            graph.add(BNode("generatedBy".encode("utf-8")),RDF.type,URIRef("http://purl.org/net/provenance/ns#Activity".encode("utf-8")))
+            #add missing provenance
+            timestamp = str(datetime.datetime.now())
+            graph.add(BNode("generatedBy".encode("utf-8")),URIRef("http://purl.org/net/provenance/ns#performedAt".encode("utf-8")),Literal(timestamp))
+
+
+            graph.serialize(format="nt")
+
+            
 
             self.patchInstruction = {}
             self.patchInstruction['status'] = 'Open'
