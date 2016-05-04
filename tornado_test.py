@@ -17,13 +17,46 @@ class MainHandler(tornado.web.RequestHandler):
 
 class ResourceHandler(tornado.web.RequestHandler):
 	def get(self):
+		global url
+		global rdfData
+
 		url = self.get_argument('url', '')
+
 		rdfData = performGetRequest(url)
 		rdfData = json.loads(rdfData)
 
 		# writeToFile(rdfData, 'einstein.2json')
+		self.render("rdf.html", rdfData=rdfData, url=url, searchText='')
 
-		self.render("rdf.html", rdfData = rdfData, url=url)
+class FilteredResourceHandler(tornado.web.RequestHandler):
+	def get(self):
+		searchText = self.get_argument('searchText', '')
+
+		filteredRdfData = {}
+		for subject, predicateDict in rdfData.items():
+
+			# subject recognized -> list this object with all its predicates and objects
+			if subject.find(searchText) != -1:
+				filteredRdfData[subject] = predicateDict
+
+			else:
+				filteredPredicates = {}
+				for predicate, objectList in predicateDict.items():
+					# predicate recognized -> list this predicate with all its objects
+					if predicate.find(searchText) != -1:
+						filteredPredicates[predicate] = objectList
+					else:
+						objects = []
+						for objectDict in objectList:
+							# object recognized -> list this object with its subject and predicate
+							if unicode(objectDict["value"]).encode('ascii', 'ignore').decode('ascii').find(searchText) != -1:
+								objects.append(objectDict)
+						if len(objects) != 0:
+							filteredPredicates[predicate] = objects
+				if len(filteredPredicates) != 0:
+					filteredRdfData[subject] = filteredPredicates
+
+		self.render("rdf.html", rdfData=filteredRdfData, url=url, searchText=searchText)
 
 ## convenience functions
 
@@ -52,6 +85,7 @@ def make_app():
 	return tornado.web.Application([
 		URL(r"/", MainHandler, name = "main"),
 		URL(r"/rdf", ResourceHandler, name = "resource"),
+		URL(r"/rdf_filtered", FilteredResourceHandler, name="resource_filtered"),
 	], debug = True, **settings)
 
 if __name__ == "__main__":
