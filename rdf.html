@@ -14,13 +14,17 @@
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
 </head>
 <body>
+	<ul id="menu">
+		<li><a class="active" href="{{reverse_url('main')}}">Resources</a></li>
+		<li><a href="{{reverse_url('patch_requests')}}">Patch requests</a></li>
+	</ul>
 	<div class="container">
 		<h1>RDF</h1>
         <h2>About: <a href= "{{url}}"> {{url}} </a> </h2>
 		<form action="{{reverse_url('resource_filtered')}}" method="get">
 			<div class="form-group">
-				<label for="searchText">Search:</label>
-				<input id="searchText" name="searchText" value="{{searchText}}" class="form-control" type="text">
+				<label for="searchText">Filter:</label>
+				<input id="searchText" name="searchText" placeholder="Search..." value="{{searchText}}" class="form-control" type="text">
 				<button type="submit" class="btn btn-default">Submit</button>
 			</div>
 		</form>

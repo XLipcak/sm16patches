@@ -58,6 +58,10 @@ class FilteredResourceHandler(tornado.web.RequestHandler):
 
 		self.render("rdf.html", rdfData=filteredRdfData, url=url, searchText=searchText)
 
+class PatchRequestHandler(tornado.web.RequestHandler):
+	def get(self):
+		self.render("patch.html")
+
 ## convenience functions
 
 def performGetRequest(url):
@@ -86,6 +90,7 @@ def make_app():
 		URL(r"/", MainHandler, name = "main"),
 		URL(r"/rdf", ResourceHandler, name = "resource"),
 		URL(r"/rdf_filtered", FilteredResourceHandler, name="resource_filtered"),
+		URL(r"/patch_requests", PatchRequestHandler, name="patch_requests"),
 	], debug = True, **settings)
 
 if __name__ == "__main__":
