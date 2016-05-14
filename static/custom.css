@@ -16,7 +16,7 @@ td {
 
 input[type=text] {
     display: inline-block;
-    width: 70%;
+    width: 40%;
     padding: 12px 20px;
     margin: 8px 0;
     box-sizing: border-box;
@@ -49,7 +49,7 @@ ul#menu li a:hover {
 }
 
 ul#menu .active {
-    background-color: #888888 ;
+    background-color: #006bb3;
     color: white;
 }
 

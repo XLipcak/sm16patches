@@ -17,21 +17,21 @@ class MainHandler(tornado.web.RequestHandler):
 
 class ResourceHandler(tornado.web.RequestHandler):
 	def get(self):
-		global url
-		global rdfData
-
 		url = self.get_argument('url', '')
+		searchText = self.get_argument('searchText', '')
 
 		rdfData = performGetRequest(url)
 		rdfData = json.loads(rdfData)
 
+
+		if not searchText:
+			self.render("rdf.html", rdfData=rdfData, url=url, searchText='')
+		else:
+			self.render("rdf.html", rdfData=self.filterRdfData(rdfData, searchText), url=url, searchText=searchText)
+
 		# writeToFile(rdfData, 'einstein.2json')
-		self.render("rdf.html", rdfData=rdfData, url=url, searchText='')
 
-class FilteredResourceHandler(tornado.web.RequestHandler):
-	def get(self):
-		searchText = self.get_argument('searchText', '')
-
+	def filterRdfData(self, rdfData, searchText):
 		filteredRdfData = {}
 		for subject, predicateDict in rdfData.items():
 
@@ -49,14 +49,15 @@ class FilteredResourceHandler(tornado.web.RequestHandler):
 						objects = []
 						for objectDict in objectList:
 							# object recognized -> list this object with its subject and predicate
-							if unicode(objectDict["value"]).encode('ascii', 'ignore').decode('ascii').find(searchText) != -1:
+							if unicode(objectDict["value"]).encode('ascii', 'ignore').decode('ascii').find(
+									searchText) != -1:
 								objects.append(objectDict)
 						if len(objects) != 0:
 							filteredPredicates[predicate] = objects
 				if len(filteredPredicates) != 0:
 					filteredRdfData[subject] = filteredPredicates
 
-		self.render("rdf.html", rdfData=filteredRdfData, url=url, searchText=searchText)
+		return filteredRdfData
 
 class PatchRequestHandler(tornado.web.RequestHandler):
 	def get(self):
@@ -89,7 +90,6 @@ def make_app():
 	return tornado.web.Application([
 		URL(r"/", MainHandler, name = "main"),
 		URL(r"/rdf", ResourceHandler, name = "resource"),
-		URL(r"/rdf_filtered", FilteredResourceHandler, name="resource_filtered"),
 		URL(r"/patch_requests", PatchRequestHandler, name="patch_requests"),
 	], debug = True, **settings)
 
