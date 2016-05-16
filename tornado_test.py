@@ -19,8 +19,14 @@ class ResourceHandler(tornado.web.RequestHandler):
 	def get(self):
 		url = self.get_argument('url', '')
 		searchText = self.get_argument('searchText', '')
+		file = self.get_argument('file', '')
 
-		rdfData = performGetRequest(url)
+		# NOTE: File is mainy for debug purposes, e.g. http://localhost:8888/rdf?file=Albert_Einstein.json
+		if file:
+			rdfData = loadFromFile(file)
+		else:
+			rdfData = performGetRequest(url)
+			
 		rdfData = json.loads(rdfData)
 
 
@@ -79,6 +85,12 @@ def writeToFile(data, fileName):
 	file = open(fileName, 'w')
 	file.write(data)
 	file.close()
+	
+def loadFromFile(fileName):
+	file = open(fileName, 'r')
+	data = file.read()
+	file.close()
+	return data
 
 ## Tornado setup
 
