@@ -25,40 +25,20 @@ class ResourceHandler(tornado.web.RequestHandler):
 		response = performGetRequest(url)
 		graph = parseHttpResponseToGraph(response)
 
-		self.render("rdf_graph.html", rdfGraph = graph, url = url, searchText = "")
+		if not searchText:
+			self.render("rdf_graph.html", rdfGraph=graph, url=url, searchText='')
+		else:
+			self.render("rdf_graph.html", rdfGraph=self.filterRdfData(graph, searchText), url=url, searchText=searchText)
 
-		# if not searchText:
-		# 	self.render("rdf.html", rdfData=rdfData, url=url, searchText='')
-		# else:
-		# 	self.render("rdf.html", rdfData=self.filterRdfData(rdfData, searchText), url=url, searchText=searchText)
+	def filterRdfData(self, rdfGraph, searchText):
+		filteredGraph = Graph()
 
-	def filterRdfData(self, rdfData, searchText):
-		filteredRdfData = {}
-		for subject, predicateDict in rdfData.items():
+		for s, p, o in rdfGraph:
+			if searchText in s or searchText in o or searchText in p:
+				filteredGraph.add( (s, p, o) )
 
-			# subject recognized -> list this object with all its predicates and objects
-			if subject.find(searchText) != -1:
-				filteredRdfData[subject] = predicateDict
+		return filteredGraph
 
-			else:
-				filteredPredicates = {}
-				for predicate, objectList in predicateDict.items():
-					# predicate recognized -> list this predicate with all its objects
-					if predicate.find(searchText) != -1:
-						filteredPredicates[predicate] = objectList
-					else:
-						objects = []
-						for objectDict in objectList:
-							# object recognized -> list this object with its subject and predicate
-							if unicode(objectDict["value"]).encode('ascii', 'ignore').decode('ascii').find(
-									searchText) != -1:
-								objects.append(objectDict)
-						if len(objects) != 0:
-							filteredPredicates[predicate] = objects
-				if len(filteredPredicates) != 0:
-					filteredRdfData[subject] = filteredPredicates
-
-		return filteredRdfData
 
 class PatchRequestHandler(tornado.web.RequestHandler):
 	def get(self):
