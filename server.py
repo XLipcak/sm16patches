@@ -15,7 +15,7 @@ import os
 
 class MainHandler(tornado.web.RequestHandler):
 	def get(self):
-		self.render("test_template.html")
+		self.render("templates/home.html")
 
 class ResourceHandler(tornado.web.RequestHandler):
 	def get(self):
@@ -26,9 +26,9 @@ class ResourceHandler(tornado.web.RequestHandler):
 		graph = parseHttpResponseToGraph(response)
 
 		if not searchText:
-			self.render("rdf_graph.html", rdfGraph=graph, url=url, searchText='')
+			self.render("templates/resource.html", rdfGraph=graph, url=url, searchText='')
 		else:
-			self.render("rdf_graph.html", rdfGraph=self.filterRdfData(graph, searchText), url=url, searchText=searchText)
+			self.render("templates/resource.html", rdfGraph=self.filterRdfData(graph, searchText), url=url, searchText=searchText)
 
 	def filterRdfData(self, rdfGraph, searchText):
 		filteredGraph = Graph()
@@ -42,7 +42,7 @@ class ResourceHandler(tornado.web.RequestHandler):
 
 class PatchRequestHandler(tornado.web.RequestHandler):
 	def get(self):
-		self.render("patch.html")
+		self.render("templates/patch.html")
 
 ## convenience functions
 
@@ -89,7 +89,7 @@ settings = {
 def make_app():
 	return tornado.web.Application([
 		URL(r"/", MainHandler, name = "main"),
-		URL(r"/rdf", ResourceHandler, name = "resource"),
+		URL(r"/resource", ResourceHandler, name = "resource"),
 		URL(r"/patch_requests", PatchRequestHandler, name="patch_requests"),
 	], debug = True, **settings)
 

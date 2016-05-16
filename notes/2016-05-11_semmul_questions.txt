@@ -1,0 +1,11 @@
+2016-05-11: semmul questions
+
+- upvoting on base of update instructions instead of whole requests
+- get access to patch requests
+- list of input formats?
+	- json, xml, ntriples, ttl, 
+- how to store patch requests
+	- as turtle serialization
+	- virtuoso triple store
+	- integrate with Magnus' storage?
+- prefix api: how important is it?

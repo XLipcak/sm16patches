@@ -40,7 +40,7 @@
                                     <ul>
 						            {% for objectDict in objectList %}
                                         {% if objectDict["type"] == "uri" %}
-									        <li><a href="{{ unicode(objectDict["value"]).encode('utf-8') }}"><p class="dont-break-out">{{ unicode(objectDict["value"]).encode('utf-8') }}</p></a></li>
+									        <li><a href="{{ unicode(objectDict["value"]).encode('utf-8') }}"><p class="break">{{ unicode(objectDict["value"]).encode('utf-8') }}</p></a></li>
 								        {% else %}
 									        <li>{{ unicode(objectDict["value"]).encode('utf-8') }}</li>
 								        {% end %}
