@@ -1,4 +1,4 @@
-.dont-break-out {
+.break {
   /* These are technically the same, but use both */
   overflow-wrap: break-word;
   word-wrap: break-word;
@@ -10,7 +10,11 @@
   word-break: break-word;
 }
 
-td {
+td.first {
+  max-width: 33%;
+}
+
+td.second {
   max-width: 33%;
 }
 
