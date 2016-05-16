@@ -19,6 +19,7 @@
 		<li><a href="{{reverse_url('patch_requests')}}">Patch requests</a></li>
 	</ul>
 	<div class="container">
+		<button style="position: fixed; float: right" @click="toggleEditMode">Toggle editing mode</button>
 		<h1>RDF</h1>
         <h2>About: <a href= "{{url}}"> {{url}} </a> </h2>
 		<form action="{{reverse_url('resource')}}" method="get">
@@ -40,9 +41,27 @@
                                     <ul>
 						            {% for objectDict in objectList %}
                                         {% if objectDict["type"] == "uri" %}
-									        <li><a href="{{ unicode(objectDict["value"]).encode('utf-8') }}"><p class="dont-break-out">{{ unicode(objectDict["value"]).encode('utf-8') }}</p></a></li>
+											<li>
+												<editable-text 
+													predicate="{{ predicate }}"
+													data="{{ unicode(objectDict["value"]).encode('utf-8') }}"
+													inline-template
+												>
+													<a style="background-color: yellow" v-show="$parent.editMode" contenteditable href="{% raw '{{ data }}' %}"><p class="dont-break-out">{% raw '{{ data }}' %}</p></a>
+													<a v-show="!$parent.editMode" href="{% raw '{{ data }}' %}"><p class="dont-break-out">{% raw '{{ data }}' %}</p></a>
+												</editable-text>
+											</li>
 								        {% else %}
-									        <li>{{ unicode(objectDict["value"]).encode('utf-8') }}</li>
+									        <li>
+												<editable-text
+													predicate="{{ predicate }}"
+													data="{{ unicode(objectDict["value"]).encode('utf-8') }}"
+													inline-template
+												>
+													<span style="background-color: yellow" contenteditable v-show="$parent.editMode">{% raw '{{ data }}' %}</span>
+													<span v-show="!$parent.editMode">{% raw '{{ data }}' %}</span>
+												</editable-text>
+											</li>
 								        {% end %}
 						            {% end %}
                                     </ul>
@@ -60,6 +79,12 @@
                 {% end %}
 			</tbody>
 		</table>
+		
+		<button @click="generatePatch">Generate Patch</button>
 	</div>
 </body>
+
+<script src="http://cdnjs.cloudflare.com/ajax/libs/vue/1.0.24/vue.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+<script src="static/script.js"></script>
 </html>
