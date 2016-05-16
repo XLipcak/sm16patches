@@ -4,7 +4,9 @@ import tornado.web
 from tornado.web import URLSpec as URL
 
 import urllib2
-import rdflib
+## external dependencies: rdflib, rdflib-jsonld
+from rdflib import Graph, plugin
+from rdflib.serializer import Serializer
 import json
 import os
 
@@ -20,16 +22,15 @@ class ResourceHandler(tornado.web.RequestHandler):
 		url = self.get_argument('url', '')
 		searchText = self.get_argument('searchText', '')
 
-		rdfData = performGetRequest(url)
-		rdfData = json.loads(rdfData)
+		response = performGetRequest(url)
+		graph = parseHttpResponseToGraph(response)
 
+		self.render("rdf_graph.html", rdfGraph = graph, url = url, searchText = "")
 
-		if not searchText:
-			self.render("rdf.html", rdfData=rdfData, url=url, searchText='')
-		else:
-			self.render("rdf.html", rdfData=self.filterRdfData(rdfData, searchText), url=url, searchText=searchText)
-
-		# writeToFile(rdfData, 'einstein.2json')
+		# if not searchText:
+		# 	self.render("rdf.html", rdfData=rdfData, url=url, searchText='')
+		# else:
+		# 	self.render("rdf.html", rdfData=self.filterRdfData(rdfData, searchText), url=url, searchText=searchText)
 
 	def filterRdfData(self, rdfData, searchText):
 		filteredRdfData = {}
@@ -68,13 +69,32 @@ class PatchRequestHandler(tornado.web.RequestHandler):
 def performGetRequest(url):
 	opener = urllib2.build_opener()
 	request = urllib2.Request(url)
-	request.add_header('Accept', 'application/rdf+json')
+	request.add_header('Accept', 'application/rdf+xml;q=0.9, text/n3, text/turtle, application/n-triples, application/ld+json')
 	try:
-		response = opener.open(request).read()
+		response = opener.open(request)
 	except Exception, e:
-		response = "not a valid url"
+		raise e
 	return response
 
+def parseHttpResponseToGraph(response):
+	responseDict = dict(response.info())
+	contentType = responseDict['content-type'][:-15]
+
+	print("Detected content type: {}".format(contentType))
+
+	contentTypeLookup = {
+		'application/rdf+xml' : 'xml',
+		'application/ld+json' : 'json-ld',
+		'text/n3' : 'nt',
+		'text/turtle' : 'turtle',
+		'application/n-triples' : 'nt'
+	}
+
+	graph = Graph().parse(data=response.read(), format=contentTypeLookup[contentType])
+	return graph
+
+
+## if this method should be used ever again, refactor it to use "with open as file"
 def writeToFile(data, fileName):
 	file = open(fileName, 'w')
 	file.write(data)
