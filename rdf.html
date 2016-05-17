@@ -19,7 +19,8 @@
 		<li><a href="{{reverse_url('patch_requests')}}">Patch requests</a></li>
 	</ul>
 	<div class="container">
-		<button style="position: fixed; float: right" @click="toggleEditMode">Toggle editing mode</button>
+	
+		<button class="button rdf-toggle-edit-mode" style="position: fixed; float: right">Toggle editing mode</button>
 		<h1>RDF</h1>
         <h2>About: <a href= "{{url}}"> {{url}} </a> </h2>
 		<form action="{{reverse_url('resource')}}" method="get">
@@ -35,33 +36,19 @@
 				{% for subject, predicateDict in rdfData.items() %}
                     {% if subject == url %}
 					    {% for predicate, objectList in predicateDict.items() %}
-                            <tr>
-                                <td><a href="{{ predicate.encode('utf-8') }}">{{ predicate.encode('utf-8') }}</a></td>
+                            <tr class="rdf-group">
+                                <td><a class="rdf-element" data-name="predicate" href="{{ predicate.encode('utf-8') }}">{{ predicate.encode('utf-8') }}</a></td>
                                 <td>
-                                    <ul>
+                                    <ul class="rdf-group">
 						            {% for objectDict in objectList %}
                                         {% if objectDict["type"] == "uri" %}
 											<li>
-												<editable-text 
-													predicate="{{ predicate }}"
-													data="{{ unicode(objectDict["value"]).encode('utf-8') }}"
-													inline-template
-												>
-													<a style="background-color: yellow" v-show="$parent.editMode" contenteditable href="{% raw '{{ data }}' %}"><p class="dont-break-out">{% raw '{{ data }}' %}</p></a>
-													<a v-show="!$parent.editMode" href="{% raw '{{ data }}' %}"><p class="dont-break-out">{% raw '{{ data }}' %}</p></a>
-												</editable-text>
+												<a href="{{ unicode(objectDict['value']).encode('utf-8') }}">
+													<p class="dont-break-out rdf-element" data-name="object">{{ unicode(objectDict['value']).encode('utf-8') }}</p>
+												</a>
 											</li>
 								        {% else %}
-									        <li>
-												<editable-text
-													predicate="{{ predicate }}"
-													data="{{ unicode(objectDict["value"]).encode('utf-8') }}"
-													inline-template
-												>
-													<span style="background-color: yellow" contenteditable v-show="$parent.editMode">{% raw '{{ data }}' %}</span>
-													<span v-show="!$parent.editMode">{% raw '{{ data }}' %}</span>
-												</editable-text>
-											</li>
+									        <li class="rdf-element" data-name="object">{{ unicode(objectDict['value']).encode('utf-8') }}</li>
 								        {% end %}
 						            {% end %}
                                     </ul>
@@ -70,9 +57,9 @@
 					    {% end %}
                     {% else %}
                         {% for predicate, objectList in predicateDict.items() %}
-                            <tr>
-                                <td> is <a href="{{ predicate.encode('utf-8') }}"> {{ predicate.encode('utf-8') }} </a> of </td>
-                                <td><ul><li><a href="{{ subject.encode('utf-8') }}">{{ subject.encode('utf-8') }}</a></li></ul></td>
+                            <tr class="rdf-group">
+                                <td> is <a class="rdf-element" data-name="predicate" href="{{ predicate.encode('utf-8') }}"> {{ predicate.encode('utf-8') }} </a> of </td>
+                                <td><ul class="rdf-group"><li><a class="rdf-element" data-name="subject" href="{{ subject.encode('utf-8') }}">{{ subject.encode('utf-8') }}</a></li></ul></td>
                             </tr>
 					    {% end %}
                     {% end %}
@@ -80,11 +67,12 @@
 			</tbody>
 		</table>
 		
-		<button @click="generatePatch">Generate Patch</button>
+		<button class="button rdf-generate-patch">Generate Patch</button>
 	</div>
 </body>
 
 <script src="http://cdnjs.cloudflare.com/ajax/libs/vue/1.0.24/vue.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.3/jquery.min.js"></script>
 <script src="static/script.js"></script>
 </html>

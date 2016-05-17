@@ -53,3 +53,7 @@ ul#menu .active {
     color: white;
 }
 
+.rdf-element-in-edit {
+	background-color: yellow;
+}
+
