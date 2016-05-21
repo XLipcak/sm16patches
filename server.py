@@ -5,10 +5,11 @@ from tornado.web import URLSpec as URL
 
 import urllib2
 ## external dependencies: rdflib, rdflib-jsonld
-from rdflib import Graph, plugin
+from rdflib import Graph, plugin, URIRef, Literal, BNode
 from rdflib.serializer import Serializer
 import json
 import os
+import time
 
 
 ## Handler classes
@@ -25,6 +26,10 @@ class ResourceHandler(tornado.web.RequestHandler):
 		response = performGetRequest(url)
 		graph = parseHttpResponseToGraph(response)
 
+		jsonData = buildNaiveJsonFromGraph(graph)
+		
+		graph = buildGraphFromJson(jsonData)
+
 		if not searchText:
 			self.render("templates/resource.html", rdfGraph=graph, url=url, searchText='')
 		else:
@@ -32,6 +37,8 @@ class ResourceHandler(tornado.web.RequestHandler):
 
 	def filterRdfData(self, rdfGraph, searchText):
 		filteredGraph = Graph()
+
+		searchText = searchText.lower()	
 
 		for s, p, o in rdfGraph:
 			if searchText in s or searchText in o or searchText in p:
@@ -73,12 +80,109 @@ def parseHttpResponseToGraph(response):
 	graph = Graph().parse(data=response.read(), format=contentTypeLookup[contentType])
 	return graph
 
+## This method works, but is currently taking way to long due to the graph not keeping triples in order
+def buildJsonFromGraph(graph):
+	print("Start building JSON from graph...")
+	start = time.time()
 
-## if this method should be used ever again, refactor it to use "with open as file"
+	jsonDict = {}
+	for sub, pred, obj in graph:
+		jsonDict[sub] = {}
+		for sub2, pred2, obj2 in graph.triples( (sub, None, None) ):
+			jsonDict[sub][pred2] = []
+			for sub3, pred3, obj3 in graph.triples( (sub, pred2, None) ):
+				if isinstance(obj3, URIRef):
+					jsonDict[sub][pred2].append(
+						{
+							"type" : "uri",
+							"value" : obj3
+						}
+					)
+				elif isinstance(obj3, Literal):
+					jsonDict[sub][pred2].append(
+						{
+							"type" : "literal",
+							"value" : obj3
+						}
+					)
+				else:
+					jsonDict[sub][pred2].append(
+						{
+							"type" : "bnode",
+							"value" : obj3
+						}
+					)
+	jsonData = json.dumps(jsonDict)
+	
+	duration = time.time() - start
+	print("Took {} seconds".format(duration	))
+
+	return jsonData
+
+def buildNaiveJsonFromGraph(graph):
+	print("Start building navie JSON from graph...")
+	start = time.time()
+
+	jsonDict = {}
+	for sub, pred, obj in graph:
+		if sub not in jsonDict:
+			jsonDict[sub] = {}
+		jsonDict[sub][pred] = []
+		if isinstance(obj, URIRef):
+			jsonDict[sub][pred].append(
+				{
+					"type" : "uri",
+					"value" : obj
+				}
+			)
+		elif isinstance(obj, Literal):
+			jsonDict[sub][pred].append(
+				{
+					"type" : "literal",
+					"value" : obj
+				}
+			)
+		else:
+			jsonDict[sub][pred].append(
+				{
+					"type" : "bnode",
+					"value" : obj
+				}
+			)
+	jsonData = json.dumps(jsonDict)
+	
+	duration = time.time() - start
+	print("Took {} seconds".format(duration	))
+
+	return jsonData
+
+def buildGraphFromJson(jsonData):
+	graph = Graph()
+	jsonDict = json.loads(jsonData)
+
+	for sub, predDict in jsonDict.items():
+		subToPut = None
+		if sub.startswith("http"):
+			subToPut = URIRef(sub.encode("utf-8"))
+		else:
+			subToPut = BNode(sub.encode("utf-8"))
+		for pred, objDictList in predDict.items():
+			for objDict in objDictList:
+				if objDict["type"] == "literal" or objDict["value"] == "*":
+					print("{} {} {} ({})".format(subToPut, pred, objDict["value"].encode("utf-8"), objDict["type"]))
+					graph.add( (subToPut, URIRef(pred), Literal(objDict["value"].encode("utf-8"))) )
+				elif objDict["type"] == "uri":
+					print("{} {} {}".format(subToPut.encode('utf-8'), pred, objDict["value"].encode('utf-8')))
+					graph.add( (subToPut, URIRef(pred), URIRef(objDict["value"].encode("utf-8"))) )
+				else:
+					print("{} {} {}".format(subToPut, pred, objDict["value"].encode("utf-8")))
+					graph.add( (subToPut, URIRef(pred), BNode(objDict["value"].encode("utf-8"))) )
+
+	return graph
+
 def writeToFile(data, fileName):
-	file = open(fileName, 'w')
-	file.write(data)
-	file.close()
+	with open(fileName, 'w') as outfile:
+		outfile.write(data)
 
 ## Tornado setup
 
