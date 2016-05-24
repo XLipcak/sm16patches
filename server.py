@@ -47,9 +47,16 @@ class ResourceHandler(tornado.web.RequestHandler):
 		return filteredGraph
 
 
-class PatchRequestHandler(tornado.web.RequestHandler):
+class PatchListHandler(tornado.web.RequestHandler):
 	def get(self):
 		self.render("templates/patch.html")
+
+class PatchRequestHandler(tornado.web.RequestHandler):
+	def get(self):
+		patchJson = self.get_argument('patchJson', '')
+		print(patchJson)
+
+
 
 ## convenience functions
 
@@ -194,6 +201,7 @@ def make_app():
 	return tornado.web.Application([
 		URL(r"/", MainHandler, name = "main"),
 		URL(r"/resource", ResourceHandler, name = "resource"),
+		URL(r"/patch_list", PatchListHandler, name="patch_list"),
 		URL(r"/patch_requests", PatchRequestHandler, name="patch_requests"),
 	], debug = True, **settings)
 
