@@ -10,6 +10,7 @@ from rdflib.serializer import Serializer
 import json
 import os
 import time
+from urlparse import urlparse
 
 
 ## Handler classes
@@ -17,6 +18,46 @@ import time
 class MainHandler(tornado.web.RequestHandler):
 	def get(self):
 		self.render("templates/home.html")
+
+		## PatchRequest only for testing purposes - to be deleted
+		example = PatchRequest([{
+		"instruction":"UPDATE",
+      "changes":{
+         "ADD":{
+            "subject":"http://dbpedia.org/page/Albert_Einstein",
+            "predicate":"http://xmls.com/foaf/0.1/accountName",
+            "value":{
+               "type":"literal",
+               "value":"123120194"
+            }
+         },
+         "DELETE":{
+            "subject":"http://dbpedia.org/page/Albert_Einstein",
+            "predicate":"http://xmls.com/foaf/0.1/accountName",
+            "value":{
+               "type":"literal",
+               "value":"123120194"
+            }
+         }
+      }},
+	{
+		"instruction": "DELETE",
+		"subject": "http://dbpedia.org/page/Albert_Einstein",
+		"predicate": "http://xmls.com/foaf/0.1/accountName",
+		"value": {
+	            "type":"literal",
+	            "value":"123120194"
+		}
+	},
+	{
+		"instruction": "ADD",
+		"subject": "http://dbpedia.org/page/Albert_Einstein",
+		"predicate": "http://xmls.com/foaf/0.1/accountName",
+		"value": {
+	            "type":"literal",
+	            "value":"123120194"
+		}
+	}	])
 
 class ResourceHandler(tornado.web.RequestHandler):
 	def get(self):
@@ -51,11 +92,11 @@ class PatchListHandler(tornado.web.RequestHandler):
 	def get(self):
 		self.render("templates/patch.html")
 
-## Only one PatchRequestHandler is necessary, to be deleted later
+## Only one PatchRequestHandler is necessary, one of them to be deleted later
 class PatchRequestHandler(tornado.web.RequestHandler):
 	def get(self):
 		patchJson = self.get_argument('patchJson', '')
-		print(patchJson)
+		patchRequest = PatchRequest(patchJson)
 
 class PatchRequestPostHandler(tornado.web.RequestHandler):
 	def get(self):
@@ -63,9 +104,10 @@ class PatchRequestPostHandler(tornado.web.RequestHandler):
 
 	def post(self):
 		patchJson = tornado.escape.json_decode(self.request.body)
-		print(patchJson)
+		patchRequest = PatchRequest(patchJson)
 
 ## Patch requests functionality
+## TODO: Think about moving this functionality to client, and add validation
 class PatchRequest():
 	#TODO Encapsulate patch instructions into separate class
 	patchInstructionsList = []
@@ -78,32 +120,52 @@ class PatchRequest():
 
 
 		for patchInstructionJson in patchRequestJson:
+			actualPatchInstructionString = patchInstructionJson.get('instruction')
 			patchInstruction = {}
-			patchInstruction['appliesTo'] = ''
-			patchInstruction['status'] = 'Open'
-			patchInstruction['update'] = {}
-			patchInstruction['wasGeneratedBy'] = ''
 
-			if patchInstructionJson.get('instruction') == 'UPDATE':
+			patchInstruction['status'] = 'Open'
+			patchInstruction['appliesTo'] = '-'
+			patchInstruction['patchType'] = '-'
+			patchInstruction['comment'] = '-'
+			patchInstruction['memberOf'] = '-'
+
+			patchInstruction['wasGeneratedBy'] = {}
+			patchInstruction['wasGeneratedBy']['wasAssociatedWith'] = '-'
+			patchInstruction['wasGeneratedBy']['confidence'] = '-'
+
+			patchInstruction['update'] = {}
+
+			if actualPatchInstructionString == 'UPDATE':
 				patchUpdateInstructions = patchInstructionJson.get('changes')
-				## parse target graph here later
-				patchInstruction['update']['target_graph'] = 'TODO'
-				patchInstruction['update']['target_subject'] = patchUpdateInstructions.get('add').get('subject')
-				patchInstruction['update']['insert'] = {'predicate':patchUpdateInstructions.get('add').get('predicate'),
-														'object':patchUpdateInstructions.get('add').get('value').get('value')}
-				patchInstruction['update']['delete'] = {'predicate': patchUpdateInstructions.get('delete').get('predicate'),
-													'object': patchUpdateInstructions.get('delete').get('value').get('value')}
+				##TODO Implement another solution of getting target graph
+				patchInstruction['update']['target_graph'] = self.parseUrl(patchUpdateInstructions.get('ADD').get('subject'))
+				patchInstruction['update']['target_subject'] = patchUpdateInstructions.get('ADD').get('subject')
+				patchInstruction['update']['insert'] = {'predicate':patchUpdateInstructions.get('ADD').get('predicate'),
+														'object':patchUpdateInstructions.get('ADD').get('value').get('value')}
+				patchInstruction['update']['delete'] = {'predicate': patchUpdateInstructions.get('DELETE').get('predicate'),
+													'object': patchUpdateInstructions.get('DELETE').get('value').get('value')}
+
+			elif actualPatchInstructionString == 'DELETE' or actualPatchInstructionString == 'ADD':
+				patchInstruction['update']['target_graph'] = self.parseUrl(patchUpdateInstructions.get(actualPatchInstructionString).get('subject'))
+				patchInstruction['update']['target_subject'] = patchInstructionJson.get('subject')
+				patchInstruction['update'][actualPatchInstructionString] = {
+					'predicate': patchInstructionJson.get('predicate'),
+					'object': patchInstructionJson.get('value').get('value')}
+
 
 			self.patchInstructionsList.append(patchInstruction)
 
 		print('Generated patch requests:')
 		print(self.patchInstructionsList)
 
-		#TODO Function not completed yet
 
 
 	def to_string(self):
 		pass
+
+	def parseUrl(self, url):
+		parsedUrl = urlparse(url)
+		return parsedUrl.scheme + '://' + parsedUrl.netloc + '/'
 
 ## convenience functions
 
