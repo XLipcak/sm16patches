@@ -51,12 +51,56 @@ class PatchListHandler(tornado.web.RequestHandler):
 	def get(self):
 		self.render("templates/patch.html")
 
+## Only one PatchRequestHandler is necessary, to be deleted later
 class PatchRequestHandler(tornado.web.RequestHandler):
 	def get(self):
 		patchJson = self.get_argument('patchJson', '')
 		print(patchJson)
 
+class PatchRequestPostHandler(tornado.web.RequestHandler):
+	def get(self):
+		patchJson = tornado.escape.json_decode(self.request.body)
+		print(patchJson)
 
+## Patch requests functionality
+class PatchRequest():
+	#TODO Encapsulate patch instructions into separate class
+	patchInstructionsList = []
+
+	def __init__(self, patchRequestJson):
+		patchRequestJson = patchRequestJson
+
+		print("Processing patch request:")
+		print(patchRequestJson)
+
+
+		for patchInstructionJson in patchRequestJson:
+			patchInstruction = {}
+			patchInstruction['appliesTo'] = ''
+			patchInstruction['status'] = 'Open'
+			patchInstruction['update'] = {}
+			patchInstruction['wasGeneratedBy'] = ''
+
+			if patchInstructionJson.get('instruction') == 'UPDATE':
+				patchUpdateInstructions = patchInstructionJson.get('changes')
+				## parse target graph here later
+				patchInstruction['update']['target_graph'] = 'TODO'
+				patchInstruction['update']['target_subject'] = patchUpdateInstructions.get('add').get('subject')
+				patchInstruction['update']['insert'] = {'predicate':patchUpdateInstructions.get('add').get('predicate'),
+														'object':patchUpdateInstructions.get('add').get('value').get('value')}
+				patchInstruction['update']['delete'] = {'predicate': patchUpdateInstructions.get('delete').get('predicate'),
+													'object': patchUpdateInstructions.get('delete').get('value').get('value')}
+
+			self.patchInstructionsList.append(patchInstruction)
+
+		print('Generated patch requests:')
+		print(self.patchInstructionsList)
+
+		#TODO Function not completed yet
+
+
+	def to_string(self):
+		pass
 
 ## convenience functions
 
@@ -203,6 +247,7 @@ def make_app():
 		URL(r"/resource", ResourceHandler, name = "resource"),
 		URL(r"/patch_list", PatchListHandler, name="patch_list"),
 		URL(r"/patch_requests", PatchRequestHandler, name="patch_requests"),
+		URL(r"/patch_requests_post", PatchRequestPostHandler, name="patch_requests_post")
 	], debug = True, **settings)
 
 if __name__ == "__main__":
