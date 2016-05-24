@@ -59,6 +59,9 @@ class PatchRequestHandler(tornado.web.RequestHandler):
 
 class PatchRequestPostHandler(tornado.web.RequestHandler):
 	def get(self):
+		pass
+
+	def post(self):
 		patchJson = tornado.escape.json_decode(self.request.body)
 		print(patchJson)
 
