@@ -5,7 +5,7 @@
 {% from rdflib import URIRef, BNode %}
 {% import inspect %}
 	<h1>RDF</h1>
-    <h2>About: <a href= "{{url}}"> {{url}} </a> </h2>
+    <h2>About: <a href="{{url}}"> {{url}} </a> </h2>
 	<form action="{{reverse_url('resource')}}" method="get">
 		<div class="form-group">
 			<label for="searchText">Filter:</label>
@@ -14,52 +14,63 @@
 			<button type="submit" class="btn btn-default">Submit</button>
 		</div>
 	</form>
-	<h3>Triples where <a href= "{{url}}"> {{url}} </a> is the subject:</h3>
+
+	<pre>...</pre>
+	<button>Action</button>
+
+	<!-- VUE START --> 
+	<template id="vue" :url="'{{url}}'" :json-graph="{{jsonGraph}}">
+		<h3>Triples where <a href="{{url}}">{{url}}</a> is the subject:</h3>
 		<table class="table">
 			<tbody>
-				{% for subject, predicate, object in rdfGraph.triples( (URIRef(url), None, None) ) %}
-					<tr>
-						<td class="first"><a href="{{ predicate }}">{{ predicate }}</a></td>
-						{% if isinstance(object, URIRef) %}
-							<td class="second">
-								<p class="break">
-									<a href="{{object}}">{{ object }}</a>
-								</p>
-							</td>
-						{% else %}
-							<td class="second">
-								<p class="break">
-									{{ object }}
-								</p>
-							</td>
-						{% end %}
+				<tr v-for="(predicate, object) in urlAsSubject">
+					<td class="first"><a href="{% raw '{{ predicate }}' %}">{% raw '{{ predicate }}' %}</a></td>
+					<td class="second" v-if="object[0].type == 'uri'">
+						<p class="break">
+							<a href="{% raw '{{ object[0].value }}' %}">{% raw '{{ object[0].value }}' %}</a>
+						</p>
+					</td>
+					<td class="second" v-else>
+						<p class="break">
+							{% raw '{{ object[0].value }}' %}
+						</p>	
+					</td>
+				</tr>			
+			</tbody>
+		</table>			
+
+		<h3>Triples where <a href= "{{url}}"> {{url}} </a> is the object:</h3>
+		<table class="table">
+			<tbody>
+				<tr v-for="(predicate, subject) in urlAsObject">
+					<td class="first">is <a href="{% raw '{{ predicate }}' %}">{% raw '{{ predicate }}' %}</a> of</td>
+					<td class="second">
+						<p class="break">
+							<a href="{% raw '{{ subject }}' %}">{% raw '{{ subject }}' %}</a>
+						</p>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+
+		<h3>Blank nodes</h3>
+		<table class="table">
+			<tbody>
+				{% for subject, predicate, object in rdfGraph.triples( (None, None, None) ) %}
+					{% if isinstance(subject, BNode) %}
+					<tr v-for="">
+						<td>{{ subject }}</td>
+						<td>{{ predicate }}</td>
+						<td>{{ object }}</td>
 					</tr>
+					{% end %}
 				{% end %}						
 			</tbody>
 		</table>
-	<h3>Triples where <a href= "{{url}}"> {{url}} </a> is the object:</h3>
-		<table class="table">
-			<tbody>
-				{% for subject, predicate, object in rdfGraph.triples( (None, None, URIRef(url)) ) %}
-					<tr>
-						<td class="first">is <a href="{{ predicate }}">{{ predicate }}</a> of</td>
-						{% if isinstance(object, URIRef) %}
-							<td class="second">
-								<p class="break">
-									<a href="{{subject}}">{{ subject }}</a>
-								</p>
-							</td>
-						{% else %}
-							<td class="second">
-								<p class="break">
-									{{ subject }}
-								</p>
-							</td>
-						{% end %}
-					</tr>
-				{% end %}						
-			</tbody>
-		</table>
+	</template>
+	<!-- VUE END -->
+
+	<!-- TODO BLANK NODES -->
 	<h3>Blank nodes</h3>
 		<table class="table">
 			<tbody>

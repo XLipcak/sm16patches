@@ -72,9 +72,9 @@ class ResourceHandler(tornado.web.RequestHandler):
 		graph = buildGraphFromJson(jsonData)
 
 		if not searchText:
-			self.render("templates/resource.html", rdfGraph=graph, url=url, searchText='')
+			self.render("templates/resource.html", jsonGraph= jsonData, rdfGraph=graph, url=url, searchText='')
 		else:
-			self.render("templates/resource.html", rdfGraph=self.filterRdfData(graph, searchText), url=url, searchText=searchText)
+			self.render("templates/resource.html", jsonGraph= jsonData, rdfGraph=self.filterRdfData(graph, searchText), url=url, searchText=searchText)
 
 	def filterRdfData(self, rdfGraph, searchText):
 		filteredGraph = Graph()
