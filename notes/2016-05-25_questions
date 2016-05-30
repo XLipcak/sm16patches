@@ -27,3 +27,9 @@
 
 - we are missing triples at the moment (because the resource might neither be subject nor object
 	- list all subjects
+
+MSG Generation:
+1) packe jedes tripel in einen eigenen MSG
+2) wenn bnode in tripel: merge mit anderen tripel mit gleichen bnodes
+
+nlogn
