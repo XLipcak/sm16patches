@@ -66,10 +66,11 @@ class ResourceHandler(tornado.web.RequestHandler):
 
 		response = performGetRequest(url)
 		graph = parseHttpResponseToGraph(response)
+		msgs = buildMsgsFromGraph(graph)
 
-		jsonData = buildNaiveJsonFromGraph(graph)
+		# jsonData = buildNaiveJsonFromGraph(graph)
 		
-		graph = buildGraphFromJson(jsonData)
+		# graph = buildGraphFromJson(jsonData)
 
 		if not searchText:
 			self.render("templates/resource.html", rdfGraph=graph, url=url, searchText='')
@@ -299,6 +300,73 @@ def buildGraphFromJson(jsonData):
 def writeToFile(data, fileName):
 	with open(fileName, 'w') as outfile:
 		outfile.write(data)
+
+def buildMsgsFromGraph(graph):
+	# TODO: refactor!
+	msgs = {}
+	bnodeLookup = {}
+
+	tripleId = 0
+	for s, p, o in graph:
+		if isinstance(s, BNode) and isinstance(o, BNode):
+			msg = {
+				'tripleId' : tripleId,
+				'triples' : set([(s, p, o)]),
+				'bnodeIds' : set([s, o]),
+				'final' : False,
+			}
+			if s not in bnodeLookup:
+				bnodeLookup[s] = []
+			if o not in bnodeLookup:
+				bnodeLookup[o] = []
+			bnodeLookup[s].append(tripleId)
+			bnodeLookup[o].append(tripleId)
+		elif isinstance(s, BNode):
+			msg = {
+				'tripleId' : tripleId,
+				'triples' : set([(s, p, o)]),
+				'bnodeIds' : set([s]),
+				'final' : False,
+			}
+			if s not in bnodeLookup:
+				bnodeLookup[s] = []
+			bnodeLookup[s].append(tripleId)
+		elif isinstance(o, BNode):
+			msg = {
+				'tripleId' : tripleId,
+				'triples' : set([(s, p, o)]),
+				'bnodeIds' : set([o]),
+				'final' : False,
+			}
+			if o not in bnodeLookup:
+				bnodeLookup[o] = []
+			bnodeLookup[o].append(tripleId)
+		else: 
+			msg = {
+				'tripleId' : tripleId,
+				'triples' : set([(s, p, o)]),
+				'bnodeIds' : set([]),
+				'final' : True,
+			}
+		msgs[tripleId] = msg
+		tripleId += 1
+
+	for msg in msgs.values():
+		if msg['final'] is True:
+			continue
+		for bnodeId in msg['bnodeIds']:
+			for key in [x for x in bnodeLookup.keys() if bnodeId == x]:
+				for tripleId in bnodeLookup[key]:
+					## merge msg mit msgs[tripleId]
+					for triple in msgs[tripleId]['triples']:
+						msg['triples'].add(triple)
+					for bnodeId in msgs[tripleId]['bnodeIds']:
+						msg['bnodeIds'].add(bnodeId)
+
+	for msg in [x for x in msgs.values() if x['final'] is False]:
+		print(msg)
+		print("")
+
 
 ## Tornado setup
 
