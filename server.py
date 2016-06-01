@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import datetime
 import tornado.ioloop
 import tornado.web
 from tornado.web import URLSpec as URL
@@ -23,6 +24,28 @@ class MainHandler(tornado.web.RequestHandler):
         example = PatchRequestPersistence('patchRequests.txt')
 
 
+def storeGraphAsNTriples(graph, url):
+    ## at the moment storing also works when just refreshing the page
+    ## this shouldn't happen as we want to match stored resources to a user
+
+    timestamp = str(datetime.datetime.now())
+    timestamp = timestamp[:-7].replace(" ", "_")
+
+    ## do regex matching in case of https
+    url = url[7:].replace("/", "")
+
+    directory = "resource_cache"
+
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+    filename = directory + "/" + timestamp + "_" + url + ".nt"
+
+    with open(filename, 'w') as outfile:
+        outfile.write(graph.serialize(format="nt"))
+    return filename
+
+
 class ResourceHandler(tornado.web.RequestHandler):
     def get(self):
         url = self.get_argument('url', '')
@@ -30,7 +53,11 @@ class ResourceHandler(tornado.web.RequestHandler):
 
         response = performGetRequest(url)
         graph = parseHttpResponseToGraph(response)
-        msgs = buildMsgsFromGraph(graph)
+        # msgs = buildMsgsFromGraph(graph)
+
+        filename = storeGraphAsNTriples(graph, url)
+
+        
 
         # jsonData = buildNaiveJsonFromGraph(graph)
 
