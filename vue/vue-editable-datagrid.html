@@ -106,7 +106,7 @@ th.active .arrow {
 				<input v-model="attribute" value="{{ attribute }}" />
 		</td>
 		<td>
-				<button @click="removeTodo(uuid)">X</button>
+				<button @click="removeEntry(key)">X</button>
 		</td>
 </script>
 
@@ -188,8 +188,7 @@ var AddDataComponent = Vue.component('add-data', {
 		},
 		addEntry() {
 			if (_.some(this.newEntry, function (value) { return !_.isEmpty(value.trim()) })) {
-				this.$dispatch('add-entry', this.newEntry)
-				console.log("Dispatched: " + this.newEntry);
+				this.$dispatch('addEntry', this.newEntry)
 				this.newEntry = this.getClearNewEntry();
 			}
 		}
@@ -205,6 +204,11 @@ var GridDataComponent = Vue.component('grid-data', {
 					console.log(' has been changed to ' + JSON.stringify(val) + ' from ' + JSON.stringify(oldVal));
 				},
 				deep: true
+			}
+		},
+		methods: {
+			removeEntry (uuid) {
+				this.$dispatch('removeEntry', uuid)
 			}
 		}
 })
@@ -247,9 +251,12 @@ Vue.component('demo-grid', {
 		}
 	},
 	events: {
-		'add-entry': function (newEntry) {
-			this.data = Object.assign({}, this.data, { [this.uuid()]: newEntry })
-		}
+		addEntry (newEntry) {
+			Vue.set(this.data, this.uuid(), newEntry);
+		},
+		removeEntry (uuid) {
+			Vue.delete(this.data, uuid);
+		},		
 	},  
 	methods: {
 		uuid() {
