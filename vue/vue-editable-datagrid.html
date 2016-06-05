@@ -94,19 +94,22 @@ th.active .arrow {
 		<tfoot is="add-data" :attributes="data | attributes">
 		</tfoot>
 	</table>
-	<button @click="getDiff()">Get changes</button>  
-	<h4>Diff:</h4>
-	<pre>{{ getDiff() | json }}</pre>
+	<h4>Added:</h4>
+	<pre>{{ addedData | json }}</pre>
+	<h4>Updated:</h4>
+	<pre>{{ updatedData | json }}</pre>
+	<h4>Deleted:</h4>	
+	<pre>{{ deletedData | json }}</pre>
 </script>
 
 <!-- data template --> 
 <script type="text/x-template" id="grid-data-template">
 	<td>{{ key }}</td>
 		<td v-for="attribute in data">
-				<input v-model="attribute" value="{{ attribute }}" />
+			<input v-model="attribute" value="{{ attribute }}" />
 		</td>
 		<td>
-				<button @click="removeEntry(key)">X</button>
+			<button @click="removeEntry(key)">X</button>
 		</td>
 </script>
 
@@ -157,39 +160,39 @@ function uuid() {
 	}
 	return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
 		s4() + '-' + s4() + s4() + s4();
-};
+}
 
 /**
  * Transforms plain Array to Object, where key is UUID.
  */
-function array2objectByUUID (data) {
-		var objectByUUID = {};
+function createUuidList (data) {
+		var uuidList = {};
 		_.each(data, function (entry) {
-				this.objectByUUID[uuid()] = entry;
-		}, {objectByUUID: objectByUUID})
+				this.uuidList[uuid()] = entry;
+		}, {uuidList: uuidList})
 
-		return objectByUUID;
-};
+		return uuidList
+}
 
 var AddDataComponent = Vue.component('add-data', {
 	props: ['attributes'],
 	template: '#add-data',
 	data: function() {
-		return { newEntry: this.getClearNewEntry() };
+		return { newEntry: this.getClearNewEntry() }
 	},
 	methods: {
 		getClearNewEntry() {
 			var newEntry = {}
 			_.each(this.attributes, function (attribute) {
-				this.newEntry[attribute] = "";
+				this.newEntry[attribute] = ""
 			}, {newEntry: newEntry})
 
-			return newEntry;
+			return newEntry
 		},
 		addEntry() {
 			if (_.some(this.newEntry, function (value) { return !_.isEmpty(value.trim()) })) {
 				this.$dispatch('addEntry', this.newEntry)
-				this.newEntry = this.getClearNewEntry();
+				this.newEntry = this.getClearNewEntry()
 			}
 		}
 	}
@@ -200,8 +203,8 @@ var GridDataComponent = Vue.component('grid-data', {
 		props: ['key', 'data'],
 		watch: {
 			data: {
-				handler: function (val, oldVal) {
-					console.log(' has been changed to ' + JSON.stringify(val) + ' from ' + JSON.stringify(oldVal));
+				handler: function (val) {
+					console.log('Something chagned to ' + JSON.stringify(val))
 				},
 				deep: true
 			}
@@ -250,52 +253,46 @@ Vue.component('demo-grid', {
 			originalData: JSON.parse(JSON.stringify(this.data))
 		}
 	},
-	events: {
-		addEntry (newEntry) {
-			Vue.set(this.data, this.uuid(), newEntry);
-		},
-		removeEntry (uuid) {
-			Vue.delete(this.data, uuid);
-		},		
-	},  
-	methods: {
-		uuid() {
-			return uuid()
-		},
-
-		/*
-		 * Diffs data format:
-		 * [ type: "add/update/delete", data: { ... } ]
-		 */
-		getDiff: function () {
-			var added = _.filter(
+	computed: {
+		addedData() {
+			return _.filter(
 				this.data,
 				function (entry, uuid) {
-					return !_.has(this.originalData, uuid);
+					return !_.has(this.originalData, uuid)
 				},
 				{ originalData: this.originalData }
 			)
-
-			var updated = _.filter(
+		},
+		updatedData() {
+			return _.filter(
 				this.data,
 				function (entry, uuid) {
 					return _.has(this.originalData, uuid) && !_.isEqual(this.originalData[uuid], entry)
 				},
 				{ originalData: this.originalData }
 			)
-
-			var deleted = _.filter(
+		},
+		deletedData() {
+			return _.filter(
 				this.originalData,
 				function (entry, uuid) {
 					return !_.has(this.data, uuid)
 				},
 				{ data: this.data }
 			)
-
-			console.log(JSON.stringify(added));
-			console.log(JSON.stringify(updated));
-			console.log(JSON.stringify(deleted));
-			return [/* TODO */];
+		}
+	},
+	events: {
+		addEntry (newEntry) {
+			Vue.set(this.data, this.uuid(), newEntry)
+		},
+		removeEntry (uuid) {
+			Vue.delete(this.data, uuid)
+		},		
+	},  
+	methods: {
+		uuid() {
+			return uuid()
 		},
 		sortBy: function (key) {
 			this.sortKey = key
@@ -310,7 +307,7 @@ var demo = new Vue({
 	data: {
 		searchQuery: '',
 		gridColumns: ['name', 'power'],
-		gridData: array2objectByUUID([
+		gridData: createUuidList([
 			// NOTE: All attributes must be string for now!
 			{ name: 'Chuck Norris', power: "Infinity" },
 			{ name: 'Bruce Lee', power: "9000" },
