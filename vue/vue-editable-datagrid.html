@@ -262,15 +262,40 @@ Vue.component('demo-grid', {
 		uuid() {
 			return uuid()
 		},
+
+		/*
+		 * Diffs data format:
+		 * [ type: "add/update/delete", data: { ... } ]
+		 */
 		getDiff: function () {
-			console.log(this.originalData);
-			console.log(this.$data);
-			console.log(this.data);
+			var added = _.filter(
+				this.data,
+				function (entry, uuid) {
+					return !_.has(this.originalData, uuid);
+				},
+				{ originalData: this.originalData }
+			)
 
+			var updated = _.filter(
+				this.data,
+				function (entry, uuid) {
+					return _.has(this.originalData, uuid) && !_.isEqual(this.originalData[uuid], entry)
+				},
+				{ originalData: this.originalData }
+			)
 
-			return _.filter(this.data, function(val, key) {
-				return !_.isEqual(this.originalData[key], val); 
-			}, {originalData: this.originalData});
+			var deleted = _.filter(
+				this.originalData,
+				function (entry, uuid) {
+					return !_.has(this.data, uuid)
+				},
+				{ data: this.data }
+			)
+
+			console.log(JSON.stringify(added));
+			console.log(JSON.stringify(updated));
+			console.log(JSON.stringify(deleted));
+			return [/* TODO */];
 		},
 		sortBy: function (key) {
 			this.sortKey = key
