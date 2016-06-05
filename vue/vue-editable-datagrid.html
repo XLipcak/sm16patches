@@ -1,138 +1,141 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Vue.js Editable Datagrid</title>
-	<style>
+<title>Vue.js Editable Datagrid</title>
+<style>
 body {
-  font-family: Helvetica Neue, Arial, sans-serif;
-  font-size: 14px;
-  color: #444;
+	font-family: Helvetica Neue, Arial, sans-serif;
+	font-size: 14px;
+	color: #444;
 }
 
 table {
-  border: 2px solid #42b983;
-  border-radius: 3px;
-  background-color: #fff;
+	border: 2px solid #42b983;
+	border-radius: 3px;
+	background-color: #fff;
 }
 
 th {
-  background-color: #42b983;
-  color: rgba(255,255,255,0.66);
-  cursor: pointer;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -user-select: none;
+	background-color: #42b983;
+	color: rgba(255,255,255,0.66);
+	cursor: pointer;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-user-select: none;
 }
 
 td {
-  background-color: #f9f9f9;
+	background-color: #f9f9f9;
 }
 
 th, td {
-  min-width: 120px;
-  padding: 10px 20px;
+	min-width: 120px;
+	padding: 10px 20px;
 }
 
 th.active {
-  color: #fff;
+	color: #fff;
 }
 
 th.active .arrow {
-  opacity: 1;
+	opacity: 1;
 }
 
 .arrow {
-  display: inline-block;
-  vertical-align: middle;
-  width: 0;
-  height: 0;
-  margin-left: 5px;
-  opacity: 0.66;
+	display: inline-block;
+	vertical-align: middle;
+	width: 0;
+	height: 0;
+	margin-left: 5px;
+	opacity: 0.66;
 }
 
 .arrow.asc {
-  border-left: 4px solid transparent;
-  border-right: 4px solid transparent;
-  border-bottom: 4px solid #fff;
+	border-left: 4px solid transparent;
+	border-right: 4px solid transparent;
+	border-bottom: 4px solid #fff;
 }
 
 .arrow.dsc {
-  border-left: 4px solid transparent;
-  border-right: 4px solid transparent;
-  border-top: 4px solid #fff;
+	border-left: 4px solid transparent;
+	border-right: 4px solid transparent;
+	border-top: 4px solid #fff;
 }
 
 #search {
-  margin-bottom: 10px;
-}	
-	</style>
+	margin-bottom: 10px;
+}   
+</style>
 </head>
 
 <body>
 <!-- component template -->
 <script type="text/x-template" id="grid-template">
-  <table>
-    <thead>
-      <tr>
-        <th>#</th>
-        <th v-for="key in columns"
-          @click="sortBy(key)"
-          :class="{active: sortKey == key}">
-          {{key | capitalize}}
-          <span class="arrow"
-            :class="sortOrders[key] > 0 ? 'asc' : 'dsc'">
-          </span>
-        </th>
-      </tr>
-    </thead>
-    <tbody v-for="
-        (key, entry) in data
-        | filterBy filterKey
-        | orderBy sortKey sortOrders[sortKey]">
-      <tr is="grid-data" :key="key" :data="entry"></tr>
-    </tbody>
-    <tfoot is="add-data" :keys="data | keys">
-    </tfoot>
-  </table>
-  <button @click="getDiff()">Get changes</button>  
-  <h4>Diff:</h4>
-  <pre>{{ getDiff() | json }}</pre>
+	<table>
+		<thead>
+			<tr>
+				<th>#</th>
+				<th v-for="key in columns"
+					@click="sortBy(key)"
+					:class="{active: sortKey == key}">
+					{{key | capitalize}}
+					<span class="arrow"
+						:class="sortOrders[key] > 0 ? 'asc' : 'dsc'">
+					</span>
+				</th>
+			</tr>
+		</thead>
+		<tbody v-for="
+				(key, entry) in data
+				| filterBy filterKey
+				| orderBy sortKey sortOrders[sortKey]">
+			<tr is="grid-data" :key="key" :data="entry"></tr>
+		</tbody>
+		<tfoot is="add-data" :attributes="data | attributes">
+		</tfoot>
+	</table>
+	<button @click="getDiff()">Get changes</button>  
+	<h4>Diff:</h4>
+	<pre>{{ getDiff() | json }}</pre>
 </script>
 
 <!-- data template --> 
 <script type="text/x-template" id="grid-data-template">
-  <td>{{ key }}</td>
-	<td v-for="attribute in data">
-    <input v-model="attribute" value="{{ attribute }}" />
-  </td>
+	<td>{{ key }}</td>
+		<td v-for="attribute in data">
+				<input v-model="attribute" value="{{ attribute }}" />
+		</td>
+		<td>
+				<button @click="removeTodo(uuid)">X</button>
+		</td>
 </script>
 
 <!-- add data template --> 
 <script type="text/x-template" id="add-data">
-  <tr>
-    <td></td>
-    <td v-for="key in keys">
-      <input v-model="newEntry[key]" placeholder="{{ key }}" />
-    </td>
-  </tr>
-  <tr>
-    <td></td>
-    <td>
-      <button @click="addEntry()">Add</button>
-    </td>
-  </tr>
+	<tr>
+		<td></td>
+		<td v-for="attribute in attributes">
+			<input v-model="newEntry[attribute]" placeholder="{{ attribute }}" />
+		</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>
+			<button @click="addEntry()">Add</button>
+		</td>
+	</tr>
 </script>
 
 <!-- demo root element -->
 <div id="demo">
-  <form id="search">
-    Search <input name="query" v-model="searchQuery">
-  </form>
-  <demo-grid
-  	:data="gridData"
-    :columns="gridColumns"
-    :filter-key="searchQuery">
-  </demo-grid>
+	<form id="search">
+		Search <input name="query" v-model="searchQuery">
+	</form>
+	<demo-grid
+		:data="gridData"
+		:columns="gridColumns"
+		:filter-key="searchQuery">
+	</demo-grid>
 </div>
 </body>
 
@@ -143,120 +146,146 @@ th.active .arrow {
 
 <script>
 
-var AddDataComponent = Vue.component('add-data', {
-  props: ['keys'],
-  template: '#add-data',
-  data: function() {
-      return { newEntry: this.getClearNewEntry() };
-  },
-  methods: {
-      getClearNewEntry() {
-          var newEntry = {}
-          _.each(this.keys, function (key) {
-              this.newEntry[key] = "";
-          }, {newEntry: newEntry})
-    
-          return newEntry;      
-      },
-      addEntry() {
-          if (_.some(this.newEntry, function (val) { return !_.isEmpty(val.trim()) })) {
-              this.$dispatch('add-entry', this.newEntry)
-              console.log("Dispatched: " + this.newEntry);
-              this.newEntry = this.getClearNewEntry();
-          }
-      }
-  }
-})
+/**
+ * UUID v4
+ */
+function uuid() {
+	function s4() {
+		return Math.floor((1 + Math.random()) * 0x10000)
+			.toString(16)
+			.substring(1);
+	}
+	return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+		s4() + '-' + s4() + s4() + s4();
+};
 
-var GridDataComponent = Vue.component('grid-data', {
-	template: '#grid-data-template',
-	props: ['key', 'data'],
-	watch: {
-	  	data: {
-	  		handler: function (val, oldVal) {
-	  			  console.log(' has been changed to ' + JSON.stringify(val) + ' from ' + JSON.stringify(oldVal));
-			  },
-        deep: true
-	  	}
+/**
+ * Transforms plain Array to Object, where key is UUID.
+ */
+function array2objectByUUID (data) {
+		var objectByUUID = {};
+		_.each(data, function (entry) {
+				this.objectByUUID[uuid()] = entry;
+		}, {objectByUUID: objectByUUID})
+
+		return objectByUUID;
+};
+
+var AddDataComponent = Vue.component('add-data', {
+	props: ['attributes'],
+	template: '#add-data',
+	data: function() {
+		return { newEntry: this.getClearNewEntry() };
+	},
+	methods: {
+		getClearNewEntry() {
+			var newEntry = {}
+			_.each(this.attributes, function (attribute) {
+				this.newEntry[attribute] = "";
+			}, {newEntry: newEntry})
+
+			return newEntry;
+		},
+		addEntry() {
+			if (_.some(this.newEntry, function (value) { return !_.isEmpty(value.trim()) })) {
+				this.$dispatch('add-entry', this.newEntry)
+				console.log("Dispatched: " + this.newEntry);
+				this.newEntry = this.getClearNewEntry();
+			}
+		}
 	}
 })
 
-Vue.filter('keys', function (data) {
-  if (_.isUndefined(_.head(data))) {
-    throw Error("Cannot determine keys for empty array.");
-  }
+var GridDataComponent = Vue.component('grid-data', {
+		template: '#grid-data-template',
+		props: ['key', 'data'],
+		watch: {
+			data: {
+				handler: function (val, oldVal) {
+					console.log(' has been changed to ' + JSON.stringify(val) + ' from ' + JSON.stringify(oldVal));
+				},
+				deep: true
+			}
+		}
+})
 
-  var keys = _.keys(_.first(data));
-  _.each(data, function (entry, i) {
-    if (!_.isEqual(this.keys, _.keys(entry))) {
-      throw Error(
-        "Array entry on position " + i + " has different key set ("
-        + JSON.stringify(_.keys(entry)) + ") as the first entry ("
-        + JSON.stringify(this.keys) + ")."
-      );
-    } 
-  }, {keys: keys});
+Vue.filter('attributes', function (data) {
+	return _.reduce(data, function(keys, entry) { 
+		if (_.isEmpty(keys)) {
+			return _.keys(entry)
+		}
 
-  return keys;
+		if (!_.isEqual(keys, _.keys(entry))) {
+			throw Error(
+				"Some array entry has different key set ("
+				+ JSON.stringify(_.keys(entry)) + ") as the first entry ("
+				+ JSON.stringify(keys) + ")."
+			)
+		} 
+
+		return keys
+	}, [])
 })
 
 // register the grid component
 Vue.component('demo-grid', {
-  template: '#grid-template',
-  props: {
-    data: Array,
-    columns: Array,
-    filterKey: String
-  },
-  data: function () {
-    var sortOrders = {}
-    this.columns.forEach(function (key) {
-      sortOrders[key] = 1
-    })
-    return {
-      sortKey: '',
-      sortOrders: sortOrders,
-      originalData: JSON.parse(JSON.stringify(this.data))
-    }
-  },
-  events: {
-      'add-entry': function (entry) {
-          console.log("Received: " + entry);
-          this.data.push(entry)
-      }
-  },  
-  methods: {
-  	getDiff: function () {
-      console.log(this.originalData);
-      console.log(this.$data);
-      console.log(this.data);
+	template: '#grid-template',
+	props: {
+		data: Object,
+		columns: Array,
+		filterKey: String
+	},
+	data: function () {
+		var sortOrders = {}
+		this.columns.forEach(function (key) {
+			sortOrders[key] = 1
+		})
+		return {
+			sortKey: '',
+			sortOrders: sortOrders,
+			originalData: JSON.parse(JSON.stringify(this.data))
+		}
+	},
+	events: {
+		'add-entry': function (newEntry) {
+			this.data = Object.assign({}, this.data, { [this.uuid()]: newEntry })
+		}
+	},  
+	methods: {
+		uuid() {
+			return uuid()
+		},
+		getDiff: function () {
+			console.log(this.originalData);
+			console.log(this.$data);
+			console.log(this.data);
 
 
-      return _.filter(this.data, function(val, key) {
-        return !_.isEqual(this.originalData[key], val); 
-      }, {originalData: this.originalData});
-  	},
-    sortBy: function (key) {
-      this.sortKey = key
-      this.sortOrders[key] = this.sortOrders[key] * -1
-    }
-  }
+			return _.filter(this.data, function(val, key) {
+				return !_.isEqual(this.originalData[key], val); 
+			}, {originalData: this.originalData});
+		},
+		sortBy: function (key) {
+			this.sortKey = key
+			this.sortOrders[key] = this.sortOrders[key] * -1
+		}
+	}
 })
 
 // bootstrap the demo
 var demo = new Vue({
-  el: '#demo',
-  data: {
-    searchQuery: '',
-    gridColumns: ['name', 'power'],
-    gridData: [
-      // NOTE: All attributes must be string for now!
-      { name: 'Chuck Norris', power: "Infinity" },
-      { name: 'Bruce Lee', power: "9000" },
-      { name: 'Jackie Chan', power: "7000" },
-      { name: 'Jet Li', power: "8000" }
-    ]
-  }
+	el: '#demo',
+	data: {
+		searchQuery: '',
+		gridColumns: ['name', 'power'],
+		gridData: array2objectByUUID([
+			// NOTE: All attributes must be string for now!
+			{ name: 'Chuck Norris', power: "Infinity" },
+			{ name: 'Bruce Lee', power: "9000" },
+			{ name: 'Jackie Chan', power: "7000" },
+			{ name: 'Jet Li', power: "8000" }
+		])
+	}
 })
 
 </script>
