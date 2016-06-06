@@ -39,8 +39,7 @@ def storeGraphAsNTriples(graph, url):
     if not os.path.exists(directory):
         os.makedirs(directory)
 
-    filename = directory + "/" + timestamp + "_" + url + ".nt"
-
+    filename = os.path.join(directory, timestamp.replace(':', '-') + "_" + url + ".nt")
     with open(filename, 'w') as outfile:
         outfile.write(graph.serialize(format="nt"))
     return filename
