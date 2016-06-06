@@ -20,9 +20,26 @@
 		<li><a href="{{reverse_url('patch_list')}}">Patch requests</a></li>
 	</ul>
 
+<!--hr>
+EDITABLE DATAGRID DEMO START
+<div id="editable-data-grid-demo">
+	<form id="search">
+		Search <input name="query" v-model="searchQuery">
+	</form>
+	<editable-data-grid
+		:data="gridData"
+		:columns="gridColumns"
+		:filter-key="searchQuery">
+	</editable-data-grid>
+</div>	
+EDITABLE DATAGRID DEMO END
+<hr-->
+
 <div class="container">
 	{% block content %}{% end %}
 </div>
 
 </body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+<script type="text/javascript" src="{{static_url("js/vue-app.build.js")}}"></script>
 </html>
