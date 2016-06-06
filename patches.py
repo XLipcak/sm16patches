@@ -93,7 +93,7 @@ class PatchRequest():
         patchNum = 0
         for patch in patchRequestJson:
             patchNum += 1
-            self.patchList[patchNum] = (Patch(patch))
+            self.patchList[patchNum] = (Patch(patch, True))
 
     def __str__(self):
         print('Printing patch request:')
@@ -107,47 +107,49 @@ class PatchRequest():
 
 
 
-
 class Patch():
     ##TODO: rebuild this method according to correct processing of patches and graphs and received JSON
-    def __init__(self, patch):
+    def __init__(self, patch, isFromJson):
 
-        actualPatchInstructionString = patch.get('instruction')
+        if not isFromJson:
+            self.patchInstruction = patch
+        else:
+            actualPatchInstructionString = patch.get('instruction')
 
-        self.patchInstruction = {}
-        self.patchInstruction['status'] = 'Open'
-        self.patchInstruction['appliesTo'] = '-'
-        self.patchInstruction['patchType'] = '-'
-        self.patchInstruction['comment'] = '-'
-        self.patchInstruction['memberOf'] = '-'
+            self.patchInstruction = {}
+            self.patchInstruction['status'] = 'Open'
+            self.patchInstruction['appliesTo'] = '-'
+            self.patchInstruction['patchType'] = '-'
+            self.patchInstruction['comment'] = '-'
+            self.patchInstruction['memberOf'] = '-'
 
-        self.patchInstruction['wasGeneratedBy'] = {}
-        self.patchInstruction['wasGeneratedBy']['wasAssociatedWith'] = '-'
-        self.patchInstruction['wasGeneratedBy']['confidence'] = '-'
+            self.patchInstruction['wasGeneratedBy'] = {}
+            self.patchInstruction['wasGeneratedBy']['wasAssociatedWith'] = '-'
+            self.patchInstruction['wasGeneratedBy']['confidence'] = '-'
 
-        self.patchInstruction['update'] = {}
+            self.patchInstruction['update'] = {}
 
-        # update instruction contains add and delete instruction
-        if actualPatchInstructionString == 'UPDATE':
-            patchUpdateInstructions = patch.get('changes')
-            ##TODO Implement another solution of getting target graph
-            self.patchInstruction['update']['target_graph'] = self.parseUrl(
-                patchUpdateInstructions.get('ADD').get('subject'))
-            self.patchInstruction['update']['target_subject'] = patchUpdateInstructions.get('ADD').get('subject')
-            self.patchInstruction['update']['insert'] = {
-                'predicate': patchUpdateInstructions.get('ADD').get('predicate'),
-                'object': patchUpdateInstructions.get('ADD').get('value').get('value')}
-            self.patchInstruction['update']['delete'] = {
-                'predicate': patchUpdateInstructions.get('DELETE').get('predicate'),
-                'object': patchUpdateInstructions.get('DELETE').get('value').get('value')}
+            # update instruction contains add and delete instruction
+            if actualPatchInstructionString == 'UPDATE':
+                patchUpdateInstructions = patch.get('changes')
+                ##TODO Implement another solution of getting target graph, MSG (probably)
+                self.patchInstruction['update']['target_graph'] = self.parseUrl(
+                    patchUpdateInstructions.get('ADD').get('subject'))
+                self.patchInstruction['update']['target_subject'] = patchUpdateInstructions.get('ADD').get('subject')
+                self.patchInstruction['update']['insert'] = {
+                    'predicate': patchUpdateInstructions.get('ADD').get('predicate'),
+                    'object': patchUpdateInstructions.get('ADD').get('value').get('value')}
+                self.patchInstruction['update']['delete'] = {
+                    'predicate': patchUpdateInstructions.get('DELETE').get('predicate'),
+                    'object': patchUpdateInstructions.get('DELETE').get('value').get('value')}
 
-        elif actualPatchInstructionString == 'DELETE' or actualPatchInstructionString == 'ADD':
-            self.patchInstruction['update']['target_graph'] = self.parseUrl(
-                patch.get('subject'))
-            self.patchInstruction['update']['target_subject'] = patch.get('subject')
-            self.patchInstruction['update'][actualPatchInstructionString] = {
-                'predicate': patch.get('predicate'),
-                'object': patch.get('value').get('value')}
+            elif actualPatchInstructionString == 'DELETE' or actualPatchInstructionString == 'ADD':
+                self.patchInstruction['update']['target_graph'] = self.parseUrl(
+                    patch.get('subject'))
+                self.patchInstruction['update']['target_subject'] = patch.get('subject')
+                self.patchInstruction['update'][actualPatchInstructionString] = {
+                    'predicate': patch.get('predicate'),
+                    'object': patch.get('value').get('value')}
 
 
     def parseUrl(self, url):
