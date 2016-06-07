@@ -3,9 +3,11 @@ export default {
 	 * Data structure describing RDF Triple object.
 	 */
 	create(subject, predicate, object) {
-		this.subject = subject;
-		this.predicate = predicate;
-		this.object = object;
+		return {
+			subject: subject,
+			predicate: predicate,
+			object: object
+		}
 	},
 
 	/**

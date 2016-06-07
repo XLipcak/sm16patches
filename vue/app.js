@@ -3,7 +3,7 @@ import Utils from './utils.js'
 import Resource from './components/resource.vue' 
 import EditableDataGrid from './components/editable-data-grid.vue'
 
-Vue.component('resource', Resource);
+Vue.component('rdf-resource', Resource);
 //Vue.component('editable-data-grid', EditableDataGrid);
 
 new Vue({

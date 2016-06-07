@@ -1,7 +1,8 @@
 <template>
-	<table>
+	<table class="table">
 		<thead>
-			<tr>
+			<!-- Original <th>'s with ordering -->
+			<!--tr>
 				<th>#</th>
 				<th v-for="key in columns"
 					@click="sortBy(key)"
@@ -11,25 +12,60 @@
 						:class="sortOrders[key] > 0 ? 'asc' : 'dsc'">
 					</span>
 				</th>
+			</tr-->
+			<tr>
+				<th>Predicate</th>
+				<th>Object</th>
 			</tr>
 		</thead>
 		<tbody>
 			<tr v-for="
-					(key, entry) in data
+					(uuid, row) in rows
 					| filterBy filterKey
 					| orderBy sortKey sortOrders[sortKey]"
-				is="editable-data-grid-row" :key="key" :data="entry"></tr>
+				is="editable-data-grid-row"
+				:columns="mapping.columns"
+				:uuid="uuid"
+				:row="row"
+			></tr>
 		</tbody>
-		<tfoot is="editable-data-grid-add" :attributes="data | attributes">
-		</tfoot>
+		<tfoot is="editable-data-grid-add" :columns="mapping.columns"></tfoot>
 	</table>
+
 	<h4>Added:</h4>
 	<pre>{{ addedData | json }}</pre>
 	<h4>Updated:</h4>
 	<pre>{{ updatedData | json }}</pre>
 	<h4>Deleted:</h4>	
 	<pre>{{ deletedData | json }}</pre>
+
 </template>
+
+<!-- ORIGINAL TABLE TEMPLATE -->
+<!--
+	<table class="table">
+		<tbody>
+			{% for subject, predicate, object in rdfGraph.triples( (URIRef(url), None, None) ) %}
+				<tr>
+					<td class="first"><a href="{{ predicate }}">{{ predicate }}</a></td>
+					{% if isinstance(object, URIRef) %}
+						<td class="second">
+							<p class="break">
+								<a href="{{object}}">{{ object }}</a>
+							</p>
+						</td>
+					{% else %}
+						<td class="second">
+							<p class="break">
+								{{ object }}
+							</p>
+						</td>
+					{% end %}
+				</tr>
+			{% end %}						
+		</tbody>
+	</table>
+-->
 
 
 
@@ -39,45 +75,47 @@ import Utils from './../utils.js'
 import Row from './editable-data-grid/row.vue'
 import Add from './editable-data-grid/add.vue'
 
-Vue.filter('attributes', function (data) {
-	return _.reduce(data, function(keys, entry) { 
-		if (_.isEmpty(keys)) {
-			return _.keys(entry)
-		}
-
-		if (!_.isEqual(keys, _.keys(entry))) {
-			throw Error(
-				"Some array entry has different key set ("
-				+ JSON.stringify(_.keys(entry)) + ") as the first entry ("
-				+ JSON.stringify(keys) + ")."
-			)
-		} 
-
-		return keys
-	}, [])
-})
-
 export default {
 	components: {
 		'editable-data-grid-row': Row,
 		'editable-data-grid-add': Add
 	},
 	props: {
-		data: Object,
-		columns: Array,
-		filterKey: String
+		mapping: Object,
+		data: {
+			coerce(dataArray) {
+				return Utils.createUuidList(dataArray)
+			}
+		}//,
+		//filterKey: String // TODO
 	},
 	data: function () {
-		var sortOrders = {}
-		this.columns.forEach(function (key) {
-			sortOrders[key] = 1
-		})
+//		var sortOrders = {}
+//		var columns = ["subject", "predicate", "object"] 
+//		columns.forEach(function (key) {
+//			sortOrders[key] = 1
+//		})
+
 		return {
-			sortKey: '',
-			sortOrders: sortOrders,
-			originalData: JSON.parse(JSON.stringify(this.data))
+//			sortKey: '',
+//			filterKey: '',
+//			sortOrders: sortOrders,
+			rows: this.computeRows(),
+			originalData: _.deepClone(this.data),
+			columns: this.columns
 		}
 	},
+	events: {
+		addRow (newRow) {
+			Vue.set(this.data, Utils.uuid(), this.mapping.create(newRow))
+		},
+		updateRow (uuid, updatedRow) {
+			Vue.set(this.data, uuid, this.mapping.update(this.data[uuid], updatedRow)) 	
+		},
+		removeRow (uuid) {
+			Vue.delete(this.data, uuid)
+		},    
+	},  
 	computed: {
 		addedData() {
 			return _.filter(
@@ -94,7 +132,7 @@ export default {
 				function (entry, uuid) {
 					return _.has(this.originalData, uuid) && !_.isEqual(this.originalData[uuid], entry)
 				},
-				{ originalData: this.originalData }
+				{ data: this.data, originalData: this.originalData }
 			)
 		},
 		deletedData() {
@@ -107,86 +145,23 @@ export default {
 			)
 		}
 	},
-	events: {
-		addEntry (newEntry) {
-			Vue.set(this.data, Utils.uuid(), newEntry)
-		},
-		removeEntry (uuid) {
-			Vue.delete(this.data, uuid)
-		},    
-	},  
-	methods: {
-		sortBy: function (key) {
-			this.sortKey = key
-			this.sortOrders[key] = this.sortOrders[key] * -1
+	watch: {
+		data: {
+			// Using watcher to recompute rows. When rows is used as compute prop, updates doesn't work.
+			handler () {
+				this.rows = this.computeRows()
+			},
+			deep: true
 		}
+	},
+	methods: {
+		computeRows () {
+			return _.mapObject(this.data, entry => this.mapping.read(entry), { mapping: this.mapping })
+		}//,
+//		sortBy: function (key) {
+//			this.sortKey = key
+//			this.sortOrders[key] = this.sortOrders[key] * -1
+//		}
 	}
 }
 </script>
-
-
-
-<!--style>
-body {
-	font-family: Helvetica Neue, Arial, sans-serif;
-	font-size: 14px;
-	color: #444;
-}
-
-table {
-	border: 2px solid #42b983;
-	border-radius: 3px;
-	background-color: #fff;
-}
-
-th {
-	background-color: #42b983;
-	color: rgba(255,255,255,0.66);
-	cursor: pointer;
-	-webkit-user-select: none;
-	-moz-user-select: none;
-	-user-select: none;
-}
-
-td {
-	background-color: #f9f9f9;
-}
-
-th, td {
-	min-width: 120px;
-	padding: 10px 20px;
-}
-
-th.active {
-	color: #fff;
-}
-
-th.active .arrow {
-	opacity: 1;
-}
-
-.arrow {
-	display: inline-block;
-	vertical-align: middle;
-	width: 0;
-	height: 0;
-	margin-left: 5px;
-	opacity: 0.66;
-}
-
-.arrow.asc {
-	border-left: 4px solid transparent;
-	border-right: 4px solid transparent;
-	border-bottom: 4px solid #fff;
-}
-
-.arrow.dsc {
-	border-left: 4px solid transparent;
-	border-right: 4px solid transparent;
-	border-top: 4px solid #fff;
-}
-
-#search {
-	margin-bottom: 10px;
-}   
-</style-->
