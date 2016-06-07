@@ -21,5 +21,6 @@ module.exports = {
 		loaders: {
 			js: 'babel'
 		}
-	}
+	},
+	devtool: 'source-map'
 }
