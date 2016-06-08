@@ -43,6 +43,8 @@ def storeGraphAsNTriples(graph, url):
 
     print(filename)
 
+    # filename = os.path.join(directory, timestamp.replace(':', '-') + "_" + url + ".nt")
+
     with open(filename, 'w') as outfile:
         outfile.write(graph.serialize(format="nt"))
     return filename
