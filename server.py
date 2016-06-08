@@ -41,6 +41,8 @@ def storeGraphAsNTriples(graph, url):
 
     filename = directory + "/" + timestamp + "_" + url + ".nt"
 
+    print(filename)
+
     with open(filename, 'w') as outfile:
         outfile.write(graph.serialize(format="nt"))
     return filename
@@ -105,6 +107,8 @@ class PatchRequestPostHandler(tornado.web.RequestHandler):
 
 
 def performGetRequest(url):
+    ## try to find out 'last modified' of the resource
+    ## if there are no changes, use the serialized version instead of performing another get request
     opener = urllib2.build_opener()
     request = urllib2.Request(url)
     request.add_header('Accept',
