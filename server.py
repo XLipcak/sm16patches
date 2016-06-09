@@ -21,7 +21,7 @@ class MainHandler(tornado.web.RequestHandler):
         self.render("templates/home.html")
 
         ## to be deleted (testing)
-        example = PatchRequestPersistence('patchRequests.txt')
+        example = PatchRequestPersistence('patch_request_storage')
 
 
 def storeGraphAsNTriples(graph, url):
