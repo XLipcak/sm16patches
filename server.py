@@ -12,6 +12,7 @@ import json
 import os
 import time
 from patches import PatchRequest, PatchRequestPersistence
+from datetime import datetime
 
 
 ## Handler classes
@@ -28,44 +29,65 @@ def storeGraphAsNTriples(graph, url):
     ## at the moment storing also works when just refreshing the page
     ## this shouldn't happen as we want to match stored resources to a user
 
-    timestamp = str(datetime.datetime.now())
-    timestamp = timestamp[:-7].replace(" ", "_")
+    timestamp = str(datetime.now())[:-7]
 
     ## do regex matching in case of https
+    ## the server doesn't seem to support https at the moment
     url = url[7:].replace("/", "")
 
-    directory = "resource_cache"
+    baseDirectory = "resource_cache"
+
+    if not os.path.exists(baseDirectory):
+        os.makedirs(baseDirectory)
+
+    directory = baseDirectory + "/" + url
 
     if not os.path.exists(directory):
         os.makedirs(directory)
 
-    filename = directory + "/" + timestamp + "_" + url + ".nt"
-
+    filename = directory + "/" + timestamp
     print(filename)
-
-    # filename = os.path.join(directory, timestamp.replace(':', '-') + "_" + url + ".nt")
 
     with open(filename, 'w') as outfile:
         outfile.write(graph.serialize(format="nt"))
     return filename
 
+def loadNTriplesFromFile(url):
+    url = url[7:].replace("/", "")
+    path = "resource_cache/" + url
+
+    currentDate = str(datetime.now())[:-7]
+    currentDate = datetime.strptime(currentDate, "%Y-%m-%d %H:%M:%S")
+
+    DAY_THRESHOLD = 7
+    currentFile = None
+
+    if os.path.isdir(path):
+        for file in os.listdir(path):
+            if file == ".DS_Store":
+                continue
+            date = datetime.strptime(file, '%Y-%m-%d %H:%M:%S')
+            dateDifference = currentDate - date
+            if dateDifference.days < DAY_THRESHOLD:
+                currentFile = file
+        if currentFile is not None:
+            return Graph().parse(path + "/" + currentFile, format="nt")
+        else:
+            return None
+    else:
+        return None
 
 class ResourceHandler(tornado.web.RequestHandler):
     def get(self):
         url = self.get_argument('url', '')
         searchText = self.get_argument('searchText', '')
 
-        response = performGetRequest(url)
-        graph = parseHttpResponseToGraph(response)
-        # msgs = buildMsgsFromGraph(graph)
+        graph = loadNTriplesFromFile(url)
 
-        filename = storeGraphAsNTriples(graph, url)
-
-        
-
-        # jsonData = buildNaiveJsonFromGraph(graph)
-
-        # graph = buildGraphFromJson(jsonData)
+        if graph is None:
+            resource = performGetRequest(url)
+            graph = parseHttpResponseToGraph(resource)
+            storeGraphAsNTriples(graph, url)
 
         if not searchText:
             self.render("templates/resource.html", rdfGraph=graph, url=url, searchText='')
@@ -113,8 +135,12 @@ def performGetRequest(url):
     ## if there are no changes, use the serialized version instead of performing another get request
     opener = urllib2.build_opener()
     request = urllib2.Request(url)
-    request.add_header('Accept',
-                       'application/rdf+xml;q=0.9, text/n3, text/turtle, application/n-triples, application/ld+json')
+    request.add_header('Accept','application/rdf+xml;q=0.9, text/n3, text/turtle, application/n-triples, application/ld+json')
+
+    timestamp = time.time()
+    httpTimestamp = time.strftime('%a, %d %b %Y %H:%M:%S GMT', time.gmtime(timestamp))
+    request.add_header('If-Modified-Since', httpTimestamp)
+
     try:
         response = opener.open(request)
     except Exception, e:
