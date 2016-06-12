@@ -85,9 +85,11 @@ class ResourceHandler(tornado.web.RequestHandler):
         graph = loadNTriplesFromFile(url)
 
         if graph is None:
+            print("no cached version found")
             resource = performGetRequest(url)
             graph = parseHttpResponseToGraph(resource)
-            storeGraphAsNTriples(graph, url)
+            filename = storeGraphAsNTriples(graph, url)
+            graph.parse(filename, format="nt")
 
         if not searchText:
             self.render("templates/resource.html", rdfGraph=graph, url=url, searchText='')
@@ -136,10 +138,6 @@ def performGetRequest(url):
     opener = urllib2.build_opener()
     request = urllib2.Request(url)
     request.add_header('Accept','application/rdf+xml;q=0.9, text/n3, text/turtle, application/n-triples, application/ld+json')
-
-    timestamp = time.time()
-    httpTimestamp = time.strftime('%a, %d %b %Y %H:%M:%S GMT', time.gmtime(timestamp))
-    request.add_header('If-Modified-Since', httpTimestamp)
 
     try:
         response = opener.open(request)
