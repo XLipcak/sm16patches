@@ -21,7 +21,7 @@
 		<tbody>
 			<tr v-for="
 					(uuid, row) in rows
-					| filterBy filterKey
+					| filterBy filterString
 					| orderBy sortKey sortOrders[sortKey]"
 				is="editable-data-grid-row"
 				:columns="mapping.columns"
@@ -81,6 +81,7 @@ export default {
 		'editable-data-grid-add': Add
 	},
 	props: {
+		filterString: String,
 		mapping: Object,
 		data: {
 			coerce(dataArray) {

@@ -10,12 +10,11 @@
 	<div class="form-group">
 		<label for="searchText">Filter:</label>
 		<input type="hidden" name="url" value="{{url}}" />
-		<input id="searchText" name="searchText" placeholder="Search..." value="{{searchText}}" class="form-control" type="text" />
-		<button type="submit" class="btn btn-default">Submit</button>
+		<input v-model="searchString" id="searchText" name="searchText" placeholder="Search..." value="{{searchText}}" class="form-control" type="text" />
 	</div>
 
 	<h3>Triples where <a href= "{{ url }}"> {{ url }} </a> is the subject:</h3>
-	<editable-data-grid	:data="urlAsSubject.triples" :mapping="urlAsSubject.mapping"></editable-data-grid>
+	<editable-data-grid	:data="urlAsSubject.triples" :mapping="urlAsSubject.mapping" :filter-string="searchString"></editable-data-grid>
 
 <!--
 	<h3>Triples where <a href= "{{url}}"> {{ url }} </a> is the object:</h3>
@@ -122,6 +121,7 @@ export default {
 		var triples = RdfTriple.createListFromJson(jsonObject)
 
 		return {
+			searchString: "",
 			urlAsSubject: {
 				triples: _.filter(triples, triple => _.isEqual(triple.subject, this.url)),
 				mapping: {
