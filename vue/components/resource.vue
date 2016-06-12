@@ -118,7 +118,7 @@ export default {
 	},
 	data () {
 		var jsonObject = JSON.parse(this.jsonData)
-		var triples = RdfTriple.createListFromJson(jsonObject)
+		var triples = RdfTriple.arrayOfTriplesFromJson(jsonObject)
 
 		return {
 			searchString: "",
