@@ -1,45 +1,26 @@
 <template>
 	<table class="table">
 		<thead>
-			<!-- Original <th>'s with ordering -->
-			<!--tr>
-				<th>#</th>
-				<th v-for="key in columns"
-					@click="sortBy(key)"
-					:class="{active: sortKey == key}">
-					{{key | capitalize}}
-					<span class="arrow"
-						:class="sortOrders[key] > 0 ? 'asc' : 'dsc'">
-					</span>
-				</th>
-			</tr-->
 			<tr>
 				<th>Predicate</th>
 				<th>Object</th>
 			</tr>
 		</thead>
 		<tbody>
-			<tr v-for="
-					(uuid, row) in rows
-					| filterBy filterString
-					| orderBy sortKey sortOrders[sortKey]"
+			<tr v-for="(uuid, row) in rows | filterBy filterString"
 				is="editable-data-grid-row"
 				:columns="mapping.columns"
 				:uuid="uuid"
 				:row="row"
+				:template="rowTemplate"
+				:editable-mode="editableMode"
 			></tr>
 		</tbody>
-		<tfoot is="editable-data-grid-add" :columns="mapping.columns"></tfoot>
+		<tfoot v-if="editableMode" is="editable-data-grid-add" :columns="mapping.columns"></tfoot>
 	</table>
-
-	<h4>Added:</h4>
-	<pre>{{ addedData | json }}</pre>
-	<h4>Updated:</h4>
-	<pre>{{ updatedData | json }}</pre>
-	<h4>Deleted:</h4>	
-	<pre>{{ deletedData | json }}</pre>
-
 </template>
+
+
 
 <!-- ORIGINAL TABLE TEMPLATE -->
 <!--
@@ -87,20 +68,20 @@ export default {
 			coerce(dataArray) {
 				return Utils.createUuidList(dataArray)
 			}
-		}//,
-		//filterKey: String // TODO
+		},
+		editableMode: {
+			type: Boolean,
+			default: true,
+			required: false
+		},
+		rowTemplate: {
+			type: String,
+			defualt: 'default',
+			required: false
+		}
 	},
 	data: function () {
-//		var sortOrders = {}
-//		var columns = ["subject", "predicate", "object"] 
-//		columns.forEach(function (key) {
-//			sortOrders[key] = 1
-//		})
-
 		return {
-//			sortKey: '',
-//			filterKey: '',
-//			sortOrders: sortOrders,
 			rows: this.computeRows(),
 			originalData: _.deepClone(this.data),
 			columns: this.columns
@@ -151,6 +132,7 @@ export default {
 			// Using watcher to recompute rows. When rows is used as compute prop, updates doesn't work.
 			handler () {
 				this.rows = this.computeRows()
+				console.log("#rows:" + _.size(this.rows))
 			},
 			deep: true
 		}
@@ -158,11 +140,7 @@ export default {
 	methods: {
 		computeRows () {
 			return _.mapObject(this.data, entry => this.mapping.read(entry), { mapping: this.mapping })
-		}//,
-//		sortBy: function (key) {
-//			this.sortKey = key
-//			this.sortOrders[key] = this.sortOrders[key] * -1
-//		}
+		}
 	}
 }
 </script>

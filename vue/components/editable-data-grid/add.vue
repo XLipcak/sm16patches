@@ -1,13 +1,7 @@
 <template>
 <tr>
-	<td v-for="(column, value) in newRow">
-		<input v-model="value" placeholder="{{ column }}" />
-	</td>
-</tr>
-<tr>
-	<td>
-		<button @click="addRow()">Add</button>
-	</td>
+	<td v-for="(column, value) in newRow"><input class="editable-mode form-control" v-model="value" placeholder="{{ column }}" /></td>
+	<td><button class="btn btn-success glyphicon glyphicon-plus" @click="addRow()"></button></td>
 </tr>
 </template>
 

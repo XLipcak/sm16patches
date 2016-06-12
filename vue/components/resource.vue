@@ -1,9 +1,5 @@
 <template>
-<!--
-	<pre>{{ url }}</pre>
-	<pre>{{ jsonData }}</pre>
-	<pre>{{ urlAsObject | json }}</pre>
--->
+	<button class="editable-mode-button" @click="toggleEditableMode">Is Editable mode: {{ isEditableMode }}</button>
 
 	<h1>RDF</h1>
 	<h2>About: <a href= "{{ url }}"> {{url}} </a> </h2>
@@ -14,12 +10,23 @@
 	</div>
 
 	<h3>Triples where <a href= "{{ url }}"> {{ url }} </a> is the subject:</h3>
-	<editable-data-grid	:data="urlAsSubject.triples" :mapping="urlAsSubject.mapping" :filter-string="searchString"></editable-data-grid>
+	<editable-data-grid
+		row-template="subject"
+		:data="urlAsSubject.triples"
+		:mapping="urlAsSubject.mapping"
+		:filter-string="searchString"
+		:editable-mode="isEditableMode"
+	></editable-data-grid>
 
-<!--
 	<h3>Triples where <a href= "{{url}}"> {{ url }} </a> is the object:</h3>
-	<editable-data-grid url="{{ url }}" :data="urlAsObject"></editable-data-grid>
--->
+	<editable-data-grid
+		row-template="object"
+		:data="urlAsObject.triples"
+		:mapping="urlAsObject.mapping"
+		:filter-string="searchString"
+		:editable-mode="isEditableMode"
+	></editable-data-grid>
+
 	<h3>Blank nodes</h3>
 	<em>To be done.</em>
 
@@ -121,6 +128,7 @@ export default {
 		var triples = RdfTriple.arrayOfTriplesFromJson(jsonObject)
 
 		return {
+			isEditableMode: true,
 			searchString: "",
 			urlAsSubject: {
 				triples: _.filter(triples, triple => _.isEqual(triple.subject, this.url)),
@@ -145,9 +153,35 @@ export default {
 				}
 			},
 
-			urlAsObject: _.filter(triples, triple => _.isEqual(triple.object.value, this.url)),
+			urlAsObject: {
+				triples: _.filter(triples, triple => _.isEqual(triple.object.value, this.url)),
+				mapping: {
+					columns: ['predicate', 'subject'],
+					create (row) {
+						return new RdfTriple.create(row.subject, row.predicate, { type: "text", value: "" }) 
+					},
+					read (data) {
+						return {
+							subject: data.subject,
+							predicate: data.predicate, 
+							object: data.object.value, 
+						}
+					},
+					update (data, updatedRow) {
+						data.subject = updatedRow.subject
+						data.predicate = updatedRow.predicate
+						data.object.value = updatedRow.object
+						return data
+					}
+				}
+			},
 
 			blankNodes: {}, // TODO
+		}
+	},
+	methods: {
+		toggleEditableMode() {
+			this.isEditableMode = !this.isEditableMode 
 		}
 	}
 }

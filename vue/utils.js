@@ -23,48 +23,4 @@ export default {
 
 		return uuidList
 	}
-
-//	/**
-//	 * Filter triples where given 'url' is as subject.
-//	 */ 
-//	filterWhereUrlAsSubject (url, json) {
-//		var result = _.filter(json, function (predicates, subject) {
-//
-//			return _.isEqual(subject, this.url)
-//		}, {url: url})
-//
-//		console.log(result)
-//		return result
-//	},
-/*
-
-SUBJECT =>
-	{  
-      "http://dbpedia.org/ontology/influencedBy":[ <= PREDICATE 
-         {  
-            "type":"uri",
-            "value":"http://dbpedia.org/resource/Albert_Einstein" <= OBJECT.VALUE
-         }
-      ],
-      "http://dbpedia.org/property/influences":[ <= PREDICATE 
-         {  
-            "type":"uri",
-            "value":"http://dbpedia.org/resource/Albert_Einstein" <= OBJECT.VALUE
-         }
-      ]
-   }
-
-*/	
-
-//	/**
-//	 * Filter triples where given 'url' is as object.
-//	 */ 
-//	filterWhereUrlAsObject (url, json) {
-//		var result = _.filter(json, function (predicates, subject) {
-//			return _.isEqual(subject, this.url)
-//		}, {url: url})
-//
-//		console.log(result)
-//		return result
-//	},
 }
