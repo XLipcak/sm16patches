@@ -132,7 +132,6 @@ export default {
 			// Using watcher to recompute rows. When rows is used as compute prop, updates doesn't work.
 			handler () {
 				this.rows = this.computeRows()
-				console.log("#rows:" + _.size(this.rows))
 			},
 			deep: true
 		}

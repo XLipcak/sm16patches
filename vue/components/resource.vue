@@ -33,22 +33,22 @@
 	<div class="footer navbar-fixed-bottom">
 		<div class="panel panel-default panel-bottom">
 			<div class="panel-body">
-				<button type="button" class="btn btn-default" @click="toggleEditableMode">Is Editable mode: {{ isEditableMode }}</button>
-				<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#patchModal">
-					Get Patch Request
+				<button type="button" class="btn btn-default" @click="toggleEditableMode">Editable mode: {{ isEditableMode }}</button>
+				<button type="button" class="btn btn-default" data-toggle="modal" data-target="#patchModal">
+					View changes
 				</button>
-				<button type="button" class="btn btn-default" v-on:click="postPatchRequest">Submit Patch Request</button>
+				<button type="button" class="btn btn-primary" v-on:click="postPatchRequest">Submit Patch Request</button>
 			</div>
 		</div>	
 	</div>
 
-	<!-- Modal -->
+	<!-- Recorded chagnes Modal -->
 	<div class="modal fade" id="patchModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
 		<div class="modal-dialog" role="document">
 			<div class="modal-content">
 				<div class="modal-header">
 					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-					<h4 class="modal-title" id="myModalLabel">Patch request</h4>
+					<h4 class="modal-title" id="myModalLabel">Recorded changes</h4>
 				</div>
 				<div class="modal-body">
 					<h4>Triples where <a href= "{{ url }}"> {{ url }} </a> is the subject:</h4>

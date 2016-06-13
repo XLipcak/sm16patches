@@ -74,7 +74,6 @@ export default {
 	watch: {
 		row: {
 			handler: function (updatedRow) {
-				console.log("Row update dispatched")
 				this.$dispatch('updateRow', this.uuid, updatedRow)
 			},
 			deep: true
