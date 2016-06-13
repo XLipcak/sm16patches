@@ -34,9 +34,10 @@
 		<div class="panel panel-default panel-bottom">
 			<div class="panel-body">
 				<button type="button" class="btn btn-default" @click="toggleEditableMode">Is Editable mode: {{ isEditableMode }}</button>
-				<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#patchModal"">
+				<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#patchModal">
 					Get Patch Request
 				</button>
+				<button type="button" class="btn btn-default" v-on:click="postPatchRequest">Submit Patch Request</button>
 			</div>
 		</div>	
 	</div>
@@ -222,6 +223,17 @@ export default {
 	methods: {
 		toggleEditableMode() {
 			this.isEditableMode = !this.isEditableMode 
+		},
+		postPatchRequest() {
+			console.log("postPatchRequest triggered");
+
+			var patchJson = Object();
+			patchJson.addedData = this.$refs.dataGridSubject.addedData.concat(this.$refs.dataGridObject.addedData);
+			patchJson.deletedData = this.$refs.dataGridSubject.deletedData.concat(this.$refs.dataGridObject.deletedData);
+			patchJson.updatedData = this.$refs.dataGridSubject.updatedData.concat(this.$refs.dataGridObject.updatedData);
+			console.log(JSON.stringify(patchJson));
+
+			$.post("/patch_requests", patchJson);
 		}
 	}
 }
