@@ -4,7 +4,11 @@
 
 {% from rdflib import URIRef, BNode %}
 {% import inspect %}
-	<h1>RDF</h1>
+	<div id="v-app">
+		<rdf-resource json-data="{{ jsonData }}" url="{{ url }}"></rdf-resource>
+	</div>
+
+	<!--h1>RDF</h1>
     <h2>About: <a href= "{{url}}"> {{url}} </a> </h2>
 	<form action="{{reverse_url('resource')}}" method="get">
 		<div class="form-group">
@@ -73,5 +77,5 @@
 					{% end %}
 				{% end %}						
 			</tbody>
-		</table>
+		</table-->
 {% end %}

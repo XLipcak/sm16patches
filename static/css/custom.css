@@ -57,3 +57,17 @@ ul#menu .active {
     color: white;
 }
 
+.editable-mode-button {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+}
+
+input.editable-mode {
+    display: inline-block;
+    width: 100%;
+}
+
+.panel-bottom {
+    margin-bottom: 0;
+}
