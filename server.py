@@ -42,7 +42,7 @@ def storeGraphAsNTriples(graph, url):
     if not os.path.exists(directory):
         os.makedirs(directory)
 
-    filename = directory + "/" + timestamp
+    filename = os.path.join(directory, timestamp.replace(':', '-'))
     print(filename)
 
     with open(filename, 'w') as outfile:
@@ -63,7 +63,7 @@ def loadNTriplesFromFile(url):
         for file in os.listdir(path):
             if file == ".DS_Store":
                 continue
-            date = datetime.strptime(file, '%Y-%m-%d %H:%M:%S')
+            date = datetime.strptime(file, '%Y-%m-%d %H-%M-%S')
             dateDifference = currentDate - date
             if dateDifference.days < DAY_THRESHOLD:
                 currentFile = file
