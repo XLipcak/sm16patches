@@ -167,6 +167,7 @@ export default {
 	data () {
 		var jsonObject = JSON.parse(this.jsonData)
 		var triples = RdfTriple.arrayOfTriplesFromJson(jsonObject)
+		var url = this.url
 
 		return {
 			isEditableMode: true,
@@ -176,7 +177,11 @@ export default {
 				mapping: {
 					columns: ['predicate', 'object'],
 					create (row) {
-						return new RdfTriple.create("", row.predicate, { type: "url", value: row.object }) 
+						return new RdfTriple.create(
+							url,
+							row.predicate,
+							{ type: Utils.isUrl(row.object) ? "url" : "text", value: row.object }
+						) 
 					},
 					read (data) {
 						return {
@@ -199,7 +204,7 @@ export default {
 				mapping: {
 					columns: ['predicate', 'subject'],
 					create (row) {
-						return new RdfTriple.create(row.subject, row.predicate, { type: "text", value: "" }) 
+						return new RdfTriple.create(row.subject, row.predicate, { type: "url", value: url }) 
 					},
 					read (data) {
 						return {

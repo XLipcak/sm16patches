@@ -22,5 +22,9 @@ export default {
 		}, {uuid: this.uuid, uuidList: uuidList})
 
 		return uuidList
+	},
+
+	isUrl(data) {
+		return data.startsWith("http://") || data.startsWith("https://")
 	}
 }
