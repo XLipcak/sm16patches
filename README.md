@@ -3,9 +3,13 @@ Install NodeJS dependencies
 ```
 npm install
 ```
-Compile JavaScripts using webpack
+Compile JavaScripts using _webpack_
 ```
-webpack
+./node_modules/.bin/webpack
+```
+Optionally, install _webpack_ to global scope
+```
+npm install webpack -g
 ```
 
 ## Run server
@@ -15,7 +19,7 @@ python server.py
 ```
 
 ## Development
-Run _webpack_ in watch mode recompile JavaScript on file change automatically
+Run _webpack_ in watch mode recompile JavaScript on file change automatically (assuming you have _webpack_ installed in global scope)
 ```
 webpack --watch
 ```
