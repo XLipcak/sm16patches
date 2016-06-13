@@ -225,15 +225,12 @@ export default {
 			this.isEditableMode = !this.isEditableMode 
 		},
 		postPatchRequest() {
-			console.log("postPatchRequest triggered");
-
 			var patchJson = Object();
 			patchJson.addedData = this.$refs.dataGridSubject.addedData.concat(this.$refs.dataGridObject.addedData);
 			patchJson.deletedData = this.$refs.dataGridSubject.deletedData.concat(this.$refs.dataGridObject.deletedData);
 			patchJson.updatedData = this.$refs.dataGridSubject.updatedData.concat(this.$refs.dataGridObject.updatedData);
-			console.log(JSON.stringify(patchJson));
 
-			$.post("/patch_requests", patchJson);
+			$.post("/patch_requests", JSON.stringify(patchJson));
 		}
 	}
 }

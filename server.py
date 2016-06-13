@@ -127,16 +127,22 @@ class PatchRequestHandler(tornado.web.RequestHandler):
         patchRequestPersistence = PatchRequestPersistence('patchRequests.txt')
         patchRequestPersistence.save(patchRequestJson)
 
-
-class PatchRequestPostHandler(tornado.web.RequestHandler):
-    def get(self):
-        pass
-
     def post(self):
-        patchRequestJson = tornado.escape.json_decode(self.request.body)
-        patchRequestPersistence = PatchRequestPersistence('patchRequests.txt')
-        patchRequestPersistence.save(patchRequestJson)
+        print("incoming POST on patch")
 
+        patchJson = json.loads(self.request.body)
+        # for key in patchJson:
+        #     print(key)
+        #     for triple in patchJson[key]:
+        #         print("\t" + triple['subject'])
+        #         print("\t" + triple['predicate'])
+        #         print("\t" + triple['object']['type'] + " - " + triple['object']['value'])
+        #         print("")
+
+
+        # patchRequestJson = tornado.escape.json_decode(self.request.body)
+        # patchRequestPersistence = PatchRequestPersistence('patchRequests.txt')
+        # patchRequestPersistence.save(patchRequestJson)
 
 def performGetRequest(url):
     ## try to find out 'last modified' of the resource
@@ -351,11 +357,11 @@ def make_app():
         URL(r"/resource", ResourceHandler, name="resource"),
         URL(r"/patch_list", PatchListHandler, name="patch_list"),
         URL(r"/patch_requests", PatchRequestHandler, name="patch_requests"),
-        URL(r"/patch_requests_post", PatchRequestPostHandler, name="patch_requests_post")
     ], debug=True, **settings)
 
 
 if __name__ == "__main__":
     app = make_app()
     app.listen(8888)
+    print("start server...")
     tornado.ioloop.IOLoop.current().start()
