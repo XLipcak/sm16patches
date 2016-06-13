@@ -68,7 +68,7 @@ def loadNTriplesFromFile(url):
             if dateDifference.days < DAY_THRESHOLD:
                 currentFile = file
         if currentFile is not None:
-            return Graph().parse(path + "/" + currentFile, format="nt"), currentFile
+            return Graph().parse(path + "/" + currentFile, format="nt")
         else:
             return None
     else:
@@ -79,7 +79,7 @@ class ResourceHandler(tornado.web.RequestHandler):
         url = self.get_argument('url', '')
         searchText = self.get_argument('searchText', '')
 
-        graph, filename = loadNTriplesFromFile(url)
+        graph = loadNTriplesFromFile(url)
 
         if graph is None:
             print("no cached version found")
@@ -88,7 +88,11 @@ class ResourceHandler(tornado.web.RequestHandler):
             filename = storeGraphAsNTriples(graph, url)
             graph.parse(filename, format="nt")
 
-        jsonData = buildNaiveJsonFromGraph(graph, url, filename)
+        
+
+        jsonData = buildNaiveJsonFromGraph(graph)
+
+        # graph = buildGraphFromJson(jsonData)
 
         if not searchText:
             self.render("templates/resource.html", jsonData=jsonData, rdfGraph=graph, url=url, searchText='')
@@ -107,22 +111,29 @@ class ResourceHandler(tornado.web.RequestHandler):
 
         return filteredGraph
 
+
 class PatchListHandler(tornado.web.RequestHandler):
     def get(self):
         self.render("templates/patch.html")
 
+
+## Only one PatchRequestHandler is necessary, one of them to be deleted later
 class PatchRequestHandler(tornado.web.RequestHandler):
     def get(self):
         pass
 
     def post(self):
-        ## TODO: match request against a cached resource
-        ## if match: generate patch
-        ## if no match: reject the request
+        print("Incoming POST on patch. JSON: ")
+        print(json.loads(self.request.body))
+        # for key in patchJson:
+        #     print(key)
+        #     for triple in patchJson[key]:
+        #         print("\t" + triple['subject'])
+        #         print("\t" + triple['predicate'])
+        #         print("\t" + triple['object']['type'] + " - " + triple['object']['value'])
+        #         print("")
 
         patchRequestJson = tornado.escape.json_decode(self.request.body)
-        print(patchRequestJson["url"])
-        print(patchRequestJson["filename"])
         patchRequestPersistence = PatchRequestPersistence('patch_request_storage')
         patchRequestPersistence.save(patchRequestJson)
 
@@ -198,41 +209,36 @@ def buildJsonFromGraph(graph):
     return jsonData
 
 
-def buildNaiveJsonFromGraph(graph, url, filename):
+def buildNaiveJsonFromGraph(graph):
     print("Start building navie JSON from graph...")
     start = time.time()
 
     jsonDict = {}
-    jsonDict["filename"] = filename
-    jsonDict["url"] = url
-    jsonDict["data"] = {}
-
     for sub, pred, obj in graph:
-        if sub not in jsonDict["data"]:
-            jsonDict["data"][sub] = {}
-        jsonDict["data"][sub][pred] = []
+        if sub not in jsonDict:
+            jsonDict[sub] = {}
+        jsonDict[sub][pred] = []
         if isinstance(obj, URIRef):
-            jsonDict["data"][sub][pred].append(
+            jsonDict[sub][pred].append(
                 {
                     "type": "uri",
                     "value": obj
                 }
             )
         elif isinstance(obj, Literal):
-            jsonDict["data"][sub][pred].append(
+            jsonDict[sub][pred].append(
                 {
                     "type": "literal",
                     "value": obj
                 }
             )
         else:
-            jsonDict["data"][sub][pred].append(
+            jsonDict[sub][pred].append(
                 {
                     "type": "bnode",
                     "value": obj
                 }
             )
-
     jsonData = json.dumps(jsonDict)
 
     duration = time.time() - start

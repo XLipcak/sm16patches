@@ -162,13 +162,11 @@ export default {
 	},
 	props: {
 		jsonData: String,
-		url: String,
-		filename: String
+		url: String
 	},
 	data () {
 		var jsonObject = JSON.parse(this.jsonData)
-		this.filename = jsonObject.filename
-		var triples = RdfTriple.arrayOfTriplesFromJson(jsonObject.data)
+		var triples = RdfTriple.arrayOfTriplesFromJson(jsonObject)
 
 		return {
 			isEditableMode: true,
@@ -228,8 +226,6 @@ export default {
 		},
 		postPatchRequest() {
 			var patchJson = Object();
-			patchJson.url = this.url
-			patchJson.filename = this.filename
 			patchJson.addedData = this.$refs.dataGridSubject.addedData.concat(this.$refs.dataGridObject.addedData);
 			patchJson.deletedData = this.$refs.dataGridSubject.deletedData.concat(this.$refs.dataGridObject.deletedData);
 			patchJson.updatedData = this.$refs.dataGridSubject.updatedData.concat(this.$refs.dataGridObject.updatedData);
