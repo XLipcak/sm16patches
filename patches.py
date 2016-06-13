@@ -1,160 +1,148 @@
+from struct import pack
+
 from urlparse import urlparse
+from rdflib import Graph, plugin, URIRef, Literal, BNode
+from rdflib.namespace import RDF
+
+import datetime
 import json
 import ast
+import os
 
 class PatchRequestPersistence:
 
-    # store into file for now, consider DB later
+    # store into file for now, consider DB or remote API later
     def __init__(self, dataSource):
-        self.dataSource = dataSource
+
+        # datasource specify data directory now
+        self.directory = dataSource
 
         # PatchRequest only for testing purposes store it and load all data
         # - to be deleted
-        patchRequestTest = PatchRequest([{
-            "instruction": "UPDATE",
-            "changes": {
-                "ADD": {
-                    "subject": "http://dbpedia.org/page/Albert_Einstein",
-                    "predicate": "http://xmls.com/foaf/0.1/accountName",
-                    "value": {
-                        "type": "literal",
-                        "value": "123120194"
-                    }
-                },
-                "DELETE": {
-                    "subject": "http://dbpedia.org/page/Albert_Einstein",
-                    "predicate": "http://xmls.com/foaf/0.1/accountName",
-                    "value": {
-                        "type": "literal",
-                        "value": "123120194"
-                    }
-                }
-            }},
+        patchRequestJsonTest = [
             {
                 "instruction": "DELETE",
                 "subject": "http://dbpedia.org/page/Albert_Einstein",
-                "predicate": "http://xmls.com/foaf/0.1/accountName",
+                "predicate": "http://dbpedia.org/ontology/abstract",
                 "value": {
                     "type": "literal",
-                    "value": "123120194"
+                    "value": "123456"
                 }
             },
             {
                 "instruction": "ADD",
                 "subject": "http://dbpedia.org/page/Albert_Einstein",
-                "predicate": "http://xmls.com/foaf/0.1/accountName",
+                "predicate": "http://dbpedia.org/property/source",
                 "value": {
                     "type": "literal",
-                    "value": "123120194"
+                    "value": "Albert Einstein"
                 }
-            }])
-        self.save(patchRequestTest)
+            }]
+
+        self.save(patchRequestJsonTest)
         self.load()
 
-    def save(self, patchRequest):
-        print('Saving patch request.')
+    def save(self, patchRequestJson):
+        if not os.path.exists(self.directory):
+            os.makedirs(self.directory)
 
-        with open(self.dataSource, 'a') as f:
-            result = {}
-            patchNum = 0
-            for x in patchRequest.patchList:
-                patchNum += 1
-                result[str(patchNum)] = (patchRequest.patchList.get(patchNum).patchInstruction)
+        patchRequest = PatchRequest(patchRequestJson, self.getIdentifier(), True)
 
-            json.dump(result, f)
-            f.write('\n')
+        print('Saving patch request with id: ' + patchRequest.identifier)
+        patchRequest.graph.serialize(self.directory + "/" + 'Patch_' + patchRequest.identifier + ".nt", format='nt')
 
     def load(self):
         print('Loading patch requests...')
-        patchRequests = {}
-        with open(self.dataSource, 'r') as f:
-            try:
-                patchNum = 0
-                for line in f:
-                    patchNum += 1
-                    data = ast.literal_eval(line)
-                    patchRequests[str(patchNum)] = data
-            # if the file is empty the ValueError will be thrown
-            except ValueError:
-                print('Load ERROR')
-                data = {}
+        patchRequests = []
 
-        print('Loaded data: ')
-        print(patchRequests)
+        for filename in os.listdir(self.directory):
+            print('Reading from file: ' + filename)
+            g = Graph()
+            g.parse(self.directory + "/" + filename, format="nt")
+            patchRequests.append(PatchRequest(g, filename[6:][:-3], False))
+
         return patchRequests
+
+    def getIdentifier(self):
+        max = 0
+        for filename in os.listdir(self.directory):
+            actualId = filename[6:][:-3]
+            if max < int(actualId):
+                max = int(actualId)
+        return str(max + 1)
+
 
 
 class PatchRequest():
-    def __init__(self, patchRequestJson):
-
-        # one patch request can contain several patches - store them in the dictionary
-        self.patchList = {}
-
-        patchNum = 0
-        for patch in patchRequestJson:
-            patchNum += 1
-            self.patchList[patchNum] = (Patch(patch, True))
-
-    def __str__(self):
-        print('Printing patch request:')
-        result = {}
-        patchNum = 0
-        for x in self.patchList:
-            patchNum += 1
-            result[str(patchNum)] = (self.patchList.get(patchNum).patchInstruction)
-
-        return str(result)
-
-
-
-class Patch():
-    ##TODO: rebuild this method according to correct processing of patches and graphs and received JSON
-    def __init__(self, patch, isFromJson):
-
+    def __init__(self, patchRequest, identifier, isFromJson):
+        self.identifier = identifier
         if not isFromJson:
-            self.patchInstruction = patch
+            self.graph = patchRequest
         else:
-            actualPatchInstructionString = patch.get('instruction')
+            # Build graph representation of Patch request from JSON
 
-            self.patchInstruction = {}
-            self.patchInstruction['status'] = 'Open'
-            self.patchInstruction['appliesTo'] = '-'
-            self.patchInstruction['patchType'] = '-'
-            self.patchInstruction['comment'] = '-'
-            self.patchInstruction['memberOf'] = '-'
+            self.graph = Graph()
 
-            self.patchInstruction['wasGeneratedBy'] = {}
-            self.patchInstruction['wasGeneratedBy']['wasAssociatedWith'] = '-'
-            self.patchInstruction['wasGeneratedBy']['confidence'] = '-'
+            # First layer
+            self.graph.add((BNode(self.identifier.encode("utf-8")), RDF.type,
+                            URIRef("http://purl.org/hpi/patchr#Patch".encode("utf-8"))))
+            self.graph.add((URIRef("http://purl.org/hpi/patchr#Patch".encode("utf-8")),
+                            URIRef("http://purl.org/hpi/patchr#appliesTo".encode("utf-8")),
+                            Literal(self.parseUrl(
+                                patchRequest[0].get('subject')).encode(
+                                "utf-8"))))
+            self.graph.add((URIRef("http://purl.org/hpi/patchr#Patch".encode("utf-8")),
+                            URIRef("http://purl.org/hpi/patchr#status".encode("utf-8")),
+                            URIRef("http://purl.org/hpi/patchr#Open".encode("utf-8"))))
 
-            self.patchInstruction['update'] = {}
+            # Update instruction layer
+            self.graph.add((URIRef("http://purl.org/hpi/patchr#Patch".encode("utf-8")),
+                            URIRef("http://purl.org/hpi/patchr#update".encode("utf-8")),
+                            BNode("updateInstruction".encode("utf-8"))))
+            self.graph.add((BNode("updateInstruction".encode("utf-8")), RDF.type,
+                            URIRef("http://webr3.org/owl/guo#UpdateInstruction".encode("utf-8"))))
+            self.graph.add((BNode("updateInstruction".encode("utf-8")),
+                            URIRef("http://webr3.org/owl/guo#target_graph".encode("utf-8")),
+                            Literal(self.parseUrl(
+                                patchRequest[0].get('subject')).encode("utf-8"))))
+            self.graph.add((BNode("updateInstruction".encode("utf-8")),
+                            URIRef("http://webr3.org/owl/guo#target_subject".encode("utf-8")),
+                            URIRef(patchRequest[0].get('subject').encode("utf-8"))))
 
-            # update instruction contains add and delete instruction
-            if actualPatchInstructionString == 'UPDATE':
-                patchUpdateInstructions = patch.get('changes')
-                ##TODO Implement another solution of getting target graph, MSG (probably)
-                self.patchInstruction['update']['target_graph'] = self.parseUrl(
-                    patchUpdateInstructions.get('ADD').get('subject'))
-                self.patchInstruction['update']['target_subject'] = patchUpdateInstructions.get('ADD').get('subject')
-                self.patchInstruction['update']['insert'] = {
-                    'predicate': patchUpdateInstructions.get('ADD').get('predicate'),
-                    'object': patchUpdateInstructions.get('ADD').get('value').get('value')}
-                self.patchInstruction['update']['delete'] = {
-                    'predicate': patchUpdateInstructions.get('DELETE').get('predicate'),
-                    'object': patchUpdateInstructions.get('DELETE').get('value').get('value')}
+            # Delete and insert instructions layer
+            self.graph.add((BNode("updateInstruction".encode("utf-8")),
+                            URIRef("http://webr3.org/owl/guo#delete".encode("utf-8")),
+                            BNode("deleteInstruction".encode("utf-8"))))
+            self.graph.add((BNode("updateInstruction".encode("utf-8")),
+                            URIRef("http://webr3.org/owl/guo#insert".encode("utf-8")),
+                            BNode("insertInstruction".encode("utf-8"))))
+            for patch in patchRequest:
+                actualPatchInstructionString = patch.get('instruction')
+                objectType = patch.get('value').get('type')
+                if(actualPatchInstructionString == 'DELETE'):
+                    if(objectType == 'literal'):
+                        self.graph.add((BNode("deleteInstruction"),URIRef(patch.get('predicate').encode("utf-8")),Literal(patch.get('value').get('value').encode("utf-8"))))
+                    else:
+                        self.graph.add((BNode("deleteInstruction"),URIRef(patch.get('predicate').encode("utf-8")),URIRef(patch.get('value').get('value').encode("utf-8"))))
+                if(actualPatchInstructionString == 'ADD'):
+                    if(objectType == 'literal'):
+                        self.graph.add((BNode("insertInstruction"),URIRef(patch.get('predicate').encode("utf-8")),Literal(patch.get('value').get('value').encode("utf-8"))))
+                    else:
+                        self.graph.add((BNode("insertInstruction"),URIRef(patch.get('predicate').encode("utf-8")),URIRef(patch.get('value').get('value').encode("utf-8"))))
 
-            elif actualPatchInstructionString == 'DELETE' or actualPatchInstructionString == 'ADD':
-                self.patchInstruction['update']['target_graph'] = self.parseUrl(
-                    patch.get('subject'))
-                self.patchInstruction['update']['target_subject'] = patch.get('subject')
-                self.patchInstruction['update'][actualPatchInstructionString] = {
-                    'predicate': patch.get('predicate'),
-                    'object': patch.get('value').get('value')}
-
+            # Was generated by layer
+            self.graph.add((URIRef("http://purl.org/hpi/patchr#Patch".encode("utf-8")),
+                            URIRef("http://purl.org/net/provenance/ns#wasGeneratedBy".encode("utf-8")),
+                            BNode("generatedBy".encode("utf-8"))))
+            self.graph.add((BNode("generatedBy".encode("utf-8")), RDF.type,
+                            URIRef("http://purl.org/net/provenance/ns#Activity".encode("utf-8"))))
+            self.graph.add((BNode("generatedBy".encode("utf-8")),
+                            URIRef("http://purl.org/net/provenance/ns#performedAt".encode("utf-8")),
+                            Literal(str(datetime.datetime.now()))))
 
     def parseUrl(self, url):
         parsedUrl = urlparse(url)
         return parsedUrl.scheme + '://' + parsedUrl.netloc + '/'
 
     def __str__(self):
-        return str(self.patchInstruction)
+        return self.graph.serialize(format="nt")
