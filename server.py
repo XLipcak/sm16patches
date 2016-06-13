@@ -21,9 +21,6 @@ class MainHandler(tornado.web.RequestHandler):
     def get(self):
         self.render("templates/home.html")
 
-        ## to be deleted (testing)
-        example = PatchRequestPersistence('patch_request_storage')
-
 
 def storeGraphAsNTriples(graph, url):
     ## at the moment storing also works when just refreshing the page
@@ -123,14 +120,11 @@ class PatchListHandler(tornado.web.RequestHandler):
 ## Only one PatchRequestHandler is necessary, one of them to be deleted later
 class PatchRequestHandler(tornado.web.RequestHandler):
     def get(self):
-        patchRequestJson = self.get_argument('patchJson', '')
-        patchRequestPersistence = PatchRequestPersistence('patchRequests.txt')
-        patchRequestPersistence.save(patchRequestJson)
+        pass
 
     def post(self):
-        print("incoming POST on patch")
-
-        patchJson = json.loads(self.request.body)
+        print("Incoming POST on patch. JSON: ")
+        print(json.loads(self.request.body))
         # for key in patchJson:
         #     print(key)
         #     for triple in patchJson[key]:
@@ -139,10 +133,9 @@ class PatchRequestHandler(tornado.web.RequestHandler):
         #         print("\t" + triple['object']['type'] + " - " + triple['object']['value'])
         #         print("")
 
-
-        # patchRequestJson = tornado.escape.json_decode(self.request.body)
-        # patchRequestPersistence = PatchRequestPersistence('patchRequests.txt')
-        # patchRequestPersistence.save(patchRequestJson)
+        patchRequestJson = tornado.escape.json_decode(self.request.body)
+        patchRequestPersistence = PatchRequestPersistence('patch_request_storage')
+        patchRequestPersistence.save(patchRequestJson)
 
 def performGetRequest(url):
     ## try to find out 'last modified' of the resource

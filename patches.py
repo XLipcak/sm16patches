@@ -17,31 +17,6 @@ class PatchRequestPersistence:
         # datasource specify data directory now
         self.directory = dataSource
 
-        # PatchRequest only for testing purposes store it and load all data
-        # - to be deleted
-        patchRequestJsonTest = [
-            {
-                "instruction": "DELETE",
-                "subject": "http://dbpedia.org/page/Albert_Einstein",
-                "predicate": "http://dbpedia.org/ontology/abstract",
-                "value": {
-                    "type": "literal",
-                    "value": "123456"
-                }
-            },
-            {
-                "instruction": "ADD",
-                "subject": "http://dbpedia.org/page/Albert_Einstein",
-                "predicate": "http://dbpedia.org/property/source",
-                "value": {
-                    "type": "literal",
-                    "value": "Albert Einstein"
-                }
-            }]
-
-        self.save(patchRequestJsonTest)
-        self.load()
-
     def save(self, patchRequestJson):
         if not os.path.exists(self.directory):
             os.makedirs(self.directory)
@@ -81,6 +56,16 @@ class PatchRequest():
         else:
             # Build graph representation of Patch request from JSON
 
+            # Find subject
+            subject = None
+            if len(patchRequest.get('addedData')) > 0:
+                subject = patchRequest.get('addedData')[0].get('subject')
+            elif len(patchRequest.get('deletedData')):
+                subject = patchRequest.get('deletedData')[0].get('subject')
+            elif len(patchRequest.get('updatedData')):
+                subject = patchRequest.get('updatedData')[0].get('subject')
+
+
             self.graph = Graph()
 
             # First layer
@@ -89,8 +74,7 @@ class PatchRequest():
             self.graph.add((URIRef("http://purl.org/hpi/patchr#Patch".encode("utf-8")),
                             URIRef("http://purl.org/hpi/patchr#appliesTo".encode("utf-8")),
                             Literal(self.parseUrl(
-                                patchRequest[0].get('subject')).encode(
-                                "utf-8"))))
+                                subject).encode( "utf-8"))))
             self.graph.add((URIRef("http://purl.org/hpi/patchr#Patch".encode("utf-8")),
                             URIRef("http://purl.org/hpi/patchr#status".encode("utf-8")),
                             URIRef("http://purl.org/hpi/patchr#Open".encode("utf-8"))))
@@ -103,11 +87,10 @@ class PatchRequest():
                             URIRef("http://webr3.org/owl/guo#UpdateInstruction".encode("utf-8"))))
             self.graph.add((BNode("updateInstruction".encode("utf-8")),
                             URIRef("http://webr3.org/owl/guo#target_graph".encode("utf-8")),
-                            Literal(self.parseUrl(
-                                patchRequest[0].get('subject')).encode("utf-8"))))
+                            Literal(self.parseUrl(subject).encode("utf-8"))))
             self.graph.add((BNode("updateInstruction".encode("utf-8")),
                             URIRef("http://webr3.org/owl/guo#target_subject".encode("utf-8")),
-                            URIRef(patchRequest[0].get('subject').encode("utf-8"))))
+                            URIRef(subject.encode("utf-8"))))
 
             # Delete and insert instructions layer
             self.graph.add((BNode("updateInstruction".encode("utf-8")),
@@ -116,19 +99,31 @@ class PatchRequest():
             self.graph.add((BNode("updateInstruction".encode("utf-8")),
                             URIRef("http://webr3.org/owl/guo#insert".encode("utf-8")),
                             BNode("insertInstruction".encode("utf-8"))))
-            for patch in patchRequest:
-                actualPatchInstructionString = patch.get('instruction')
-                objectType = patch.get('value').get('type')
-                if(actualPatchInstructionString == 'DELETE'):
-                    if(objectType == 'literal'):
-                        self.graph.add((BNode("deleteInstruction"),URIRef(patch.get('predicate').encode("utf-8")),Literal(patch.get('value').get('value').encode("utf-8"))))
-                    else:
-                        self.graph.add((BNode("deleteInstruction"),URIRef(patch.get('predicate').encode("utf-8")),URIRef(patch.get('value').get('value').encode("utf-8"))))
-                if(actualPatchInstructionString == 'ADD'):
-                    if(objectType == 'literal'):
-                        self.graph.add((BNode("insertInstruction"),URIRef(patch.get('predicate').encode("utf-8")),Literal(patch.get('value').get('value').encode("utf-8"))))
-                    else:
-                        self.graph.add((BNode("insertInstruction"),URIRef(patch.get('predicate').encode("utf-8")),URIRef(patch.get('value').get('value').encode("utf-8"))))
+
+            for patch in patchRequest.get('addedData'):
+                objectType = patch.get('object').get('type')
+                if(objectType == 'literal' or objectType == 'text'):
+                    self.graph.add((BNode("insertInstruction"),URIRef(patch.get('predicate').encode("utf-8")),Literal(patch.get('object').get('value').encode("utf-8"))))
+                else:
+                    self.graph.add((BNode("insertInstruction"),URIRef(patch.get('predicate').encode("utf-8")),URIRef(patch.get('object').get('value').encode("utf-8"))))
+
+            for patch in patchRequest.get('updatedData'):
+                objectType = patch.get('object').get('type')
+                if (objectType == 'literal' or objectType == 'text'):
+                    self.graph.add((BNode("insertInstruction"), URIRef(patch.get('predicate').encode("utf-8")),
+                                    Literal(patch.get('object').get('value').encode("utf-8"))))
+                else:
+                    self.graph.add((BNode("insertInstruction"), URIRef(patch.get('predicate').encode("utf-8")),
+                                    URIRef(patch.get('object').get('value').encode("utf-8"))))
+
+            for patch in patchRequest.get('deletedData'):
+                objectType = patch.get('object').get('type')
+                if (objectType == 'literal' or objectType == 'text'):
+                    self.graph.add((BNode("deleteInstruction"), URIRef(patch.get('predicate').encode("utf-8")),
+                                    Literal(patch.get('object').get('value').encode("utf-8"))))
+                else:
+                    self.graph.add((BNode("deleteInstruction"), URIRef(patch.get('predicate').encode("utf-8")),
+                                    URIRef(patch.get('object').get('value').encode("utf-8"))))
 
             # Was generated by layer
             self.graph.add((URIRef("http://purl.org/hpi/patchr#Patch".encode("utf-8")),
@@ -141,7 +136,11 @@ class PatchRequest():
                             Literal(str(datetime.datetime.now()))))
 
     def parseUrl(self, url):
-        parsedUrl = urlparse(url)
+        try:
+            parsedUrl = urlparse(url)
+        except:
+            print('URL not parsed!')
+            return url
         return parsedUrl.scheme + '://' + parsedUrl.netloc + '/'
 
     def __str__(self):
