@@ -67,3 +67,7 @@ input.editable-mode {
     display: inline-block;
     width: 100%;
 }
+
+.panel-bottom {
+    margin-bottom: 0;
+}

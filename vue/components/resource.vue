@@ -1,6 +1,4 @@
 <template>
-	<button class="editable-mode-button" @click="toggleEditableMode">Is Editable mode: {{ isEditableMode }}</button>
-
 	<h1>RDF</h1>
 	<h2>About: <a href= "{{ url }}"> {{url}} </a> </h2>
 	<div class="form-group">
@@ -11,6 +9,7 @@
 
 	<h3>Triples where <a href= "{{ url }}"> {{ url }} </a> is the subject:</h3>
 	<editable-data-grid
+		v-ref:data-grid-subject
 		row-template="subject"
 		:data="urlAsSubject.triples"
 		:mapping="urlAsSubject.mapping"
@@ -20,6 +19,7 @@
 
 	<h3>Triples where <a href= "{{url}}"> {{ url }} </a> is the object:</h3>
 	<editable-data-grid
+		v-ref:data-grid-object
 		row-template="object"
 		:data="urlAsObject.triples"
 		:mapping="urlAsObject.mapping"
@@ -29,6 +29,46 @@
 
 	<h3>Blank nodes</h3>
 	<em>To be done.</em>
+
+	<div class="footer navbar-fixed-bottom">
+		<div class="panel panel-default panel-bottom">
+			<div class="panel-body">
+				<button type="button" class="btn btn-default" @click="toggleEditableMode">Is Editable mode: {{ isEditableMode }}</button>
+				<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#patchModal"">
+					Get Patch Request
+				</button>
+			</div>
+		</div>	
+	</div>
+
+	<!-- Modal -->
+	<div class="modal fade" id="patchModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+					<h4 class="modal-title" id="myModalLabel">Patch request</h4>
+				</div>
+				<div class="modal-body">
+					<h4>Triples where <a href= "{{ url }}"> {{ url }} </a> is the subject:</h4>
+					<h5>Added</h5>
+					<pre>{{ $refs.dataGridSubject.addedData | json }}</pre>
+					<h5>Updated</h5>
+					<pre>{{ $refs.dataGridSubject.updatedData | json }}</pre>
+					<h5>Deleted</h5>
+					<pre>{{ $refs.dataGridSubject.deletedData | json }}</pre>
+
+					<h4>Triples where <a href= "{{url}}"> {{ url }} </a> is the object:</h4>
+					<h5>Added</h5>
+					<pre>{{ $refs.dataGridObject.addedData | json }}</pre>
+					<h5>Updated</h5>
+					<pre>{{ $refs.dataGridObject.updatedData | json }}</pre>
+					<h5>Deleted</h5>
+					<pre>{{ $refs.dataGridObject.deletedData | json }}</pre>				</div>
+			</div>
+		</div>
+	</div>				
+
 
 <!-- ORIGINAL PYTHON TEMPLATE -->
 
