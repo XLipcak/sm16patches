@@ -59,10 +59,13 @@ def loadNTriplesFromFile(url):
     DAY_THRESHOLD = 7
     currentFile = None
 
-    if os.path.isdir(path):
+    print(path)
+
+    if os.path.isdir(path) and os.listdir(path):
         for file in os.listdir(path):
             if file == ".DS_Store":
                 continue
+            print(file)
             date = datetime.strptime(file, '%Y-%m-%d %H-%M-%S')
             dateDifference = currentDate - date
             if dateDifference.days < DAY_THRESHOLD:
@@ -70,9 +73,9 @@ def loadNTriplesFromFile(url):
         if currentFile is not None:
             return Graph().parse(path + "/" + currentFile, format="nt"), currentFile
         else:
-            return None
+            return None, None
     else:
-        return None
+        return None, None
 
 class ResourceHandler(tornado.web.RequestHandler):
     def get(self):
