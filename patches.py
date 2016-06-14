@@ -65,14 +65,7 @@ class PatchRequest():
             # Build graph representation of Patch request from JSON
 
             # Find subject
-            subject = None
-            if len(patchRequest.get('addedData')) > 0:
-                subject = patchRequest.get('addedData')[0].get('subject')
-            elif len(patchRequest.get('deletedData')):
-                subject = patchRequest.get('deletedData')[0].get('subject')
-            elif len(patchRequest.get('updatedData')):
-                subject = patchRequest.get('updatedData')[0].get('subject')
-
+            subject = patchRequest["url"]
 
             self.graph = Graph()
 
@@ -81,8 +74,7 @@ class PatchRequest():
                             URIRef("http://purl.org/hpi/patchr#Patch".encode("utf-8"))))
             self.graph.add((BNode(self.identifier.encode("utf-8")),
                             URIRef("http://purl.org/hpi/patchr#appliesTo".encode("utf-8")),
-                            Literal(self.parseUrl(
-                                subject).encode( "utf-8"))))
+                            URIRef(subject.encode("utf-8"))))
             self.graph.add((BNode(self.identifier.encode("utf-8")),
                             URIRef("http://purl.org/hpi/patchr#status".encode("utf-8")),
                             URIRef("http://purl.org/hpi/patchr#Open".encode("utf-8"))))
@@ -95,7 +87,7 @@ class PatchRequest():
                             URIRef("http://webr3.org/owl/guo#UpdateInstruction".encode("utf-8"))))
             self.graph.add((BNode("updateInstruction".encode("utf-8")),
                             URIRef("http://webr3.org/owl/guo#target_graph".encode("utf-8")),
-                            Literal(self.parseUrl(subject).encode("utf-8"))))
+                            URIRef(self.parseUrl(subject).encode("utf-8"))))
             self.graph.add((BNode("updateInstruction".encode("utf-8")),
                             URIRef("http://webr3.org/owl/guo#target_subject".encode("utf-8")),
                             URIRef(subject.encode("utf-8"))))
