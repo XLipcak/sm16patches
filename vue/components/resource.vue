@@ -182,7 +182,10 @@ export default {
 						return new RdfTriple.create(
 							url,
 							row.predicate,
-							{ type: Utils.isUrl(row.object) ? "url" : "text", value: row.object }
+							{
+								type: Utils.isUrl(row.object)
+									? "url" : "text", value: row.object
+							}
 						) 
 					},
 					read (data) {
@@ -232,14 +235,24 @@ export default {
 			this.isEditableMode = !this.isEditableMode 
 		},
 		postPatchRequest() {
-			var patchJson = Object();
-			patchJson.url = this.url
-			patchJson.filename = this.filename
-			patchJson.addedData = this.$refs.dataGridSubject.addedData.concat(this.$refs.dataGridObject.addedData);
-			patchJson.deletedData = this.$refs.dataGridSubject.deletedData.concat(this.$refs.dataGridObject.deletedData);
-			patchJson.updatedData = this.$refs.dataGridSubject.updatedData.concat(this.$refs.dataGridObject.updatedData);
+			var patchJson = Object()
+			patchJson.resourceUrl = this.url
 
-			$.post("/patch_requests", JSON.stringify(patchJson));
+			patchJson.addedData = [].concat(
+				this.$refs.dataGridSubject.addedData,
+				_.map(this.$refs.dataGridSubject.updatedData, d => d.to),
+				this.$refs.dataGridObject.addedData,
+				_.map(this.$refs.dataGridObject.updatedData, d => d.to)
+			)
+
+			patchJson.deletedData = [].concat(
+				this.$refs.dataGridSubject.deletedData,
+				_.map(this.$refs.dataGridSubject.updatedData, d => d.from),
+				this.$refs.dataGridObject.deletedData,
+				_.map(this.$refs.dataGridObject.updatedData, d => d.from)
+			)
+
+			$.post("/patch_requests", JSON.stringify(patchJson))
 		}
 	}
 }

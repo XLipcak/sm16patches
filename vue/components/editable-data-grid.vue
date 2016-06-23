@@ -109,12 +109,21 @@ export default {
 			)
 		},
 		updatedData() {
-			return _.filter(
-				this.data,
+			return _.map(
+				_.filterObject(
+					this.data,
+					function (entry, uuid) {
+						return _.has(this.originalData, uuid) && !_.isEqual(this.originalData[uuid], entry)
+					},
+					{ data: this.data, originalData: this.originalData }
+				),
 				function (entry, uuid) {
-					return _.has(this.originalData, uuid) && !_.isEqual(this.originalData[uuid], entry)
+					return {
+						from: this.originalData[uuid],
+						to: entry 
+					} 
 				},
-				{ data: this.data, originalData: this.originalData }
+				{ originalData: this.originalData }
 			)
 		},
 		deletedData() {
