@@ -11,7 +11,7 @@ from rdflib.serializer import Serializer
 import json
 import os
 import time
-from patches import PatchRequest, PatchRequestPersistence
+from patches import PatchRequestPersistence
 from datetime import datetime
 
 
@@ -112,7 +112,11 @@ class ResourceHandler(tornado.web.RequestHandler):
 
 class PatchListHandler(tornado.web.RequestHandler):
     def get(self):
-        self.render("templates/patch.html")
+        patchRequestUrl = self.get_argument('patchRequestUrl', '')
+
+        patchRequestPersistence = PatchRequestPersistence('patch_request_storage')
+        patchRequestJson = patchRequestPersistence.load(patchRequestUrl)
+        self.render("templates/patch.html", patchRequestJson = patchRequestJson)
 
 class PatchRequestHandler(tornado.web.RequestHandler):
     def get(self):
@@ -124,8 +128,12 @@ class PatchRequestHandler(tornado.web.RequestHandler):
         ## if no match: reject the request
 
         patchRequestJson = tornado.escape.json_decode(self.request.body)
-        print(patchRequestJson["url"])
-        print(patchRequestJson["filename"])
+        print('Received JSON:')
+        print(patchRequestJson)
+
+        #print(patchRequestJson["resourceUrl"])
+        #print(patchRequestJson["filename"])
+
         patchRequestPersistence = PatchRequestPersistence('patch_request_storage')
         patchRequestPersistence.save(patchRequestJson)
 

@@ -10,138 +10,151 @@ import datetime
 import json
 import ast
 import os
+import time
 
 class PatchRequestPersistence:
 
-    # store into file for now, consider DB or remote API later
+    # dataSource - folder location
     def __init__(self, dataSource):
-
-        # datasource specify data directory now
         self.directory = dataSource
 
-    def save(self, patchRequestJson):
-        if not os.path.exists(self.directory):
-            os.makedirs(self.directory)
+    def save(self, changeRequestJson):
+        resourceUrl = changeRequestJson["resourceUrl"]
+        resourceId = self.getResourceId(resourceUrl)
+        patchRequestId = int(round(time.time() * 1000))
 
-        patchRequest = PatchRequest(patchRequestJson, self.getIdentifier(), True)
+        self.createResourceFolderStructure(resourceId)
+        print('Saving patch request with id: ' + str(patchRequestId))
 
-        print('Saving patch request with id: ' + patchRequest.identifier)
-        patchRequest.graph.serialize(self.directory + "/" + 'Patch_' + patchRequest.identifier + ".ttl", format='turtle')
+        # generate list of JSON dictionaries which will be written into different files
+        generatedPatches = self.generatePatchRequestJson(changeRequestJson)
 
-    def load(self):
-        print('Loading patch requests...')
-        patchRequests = []
+        # Resource is subject - write to resource dir
+        with open(self.getSubjectPath(resourceUrl) + "/" + 'Patch_' + str(patchRequestId) + ".json", 'w') as outfile:
+            json.dump(generatedPatches[0], outfile)
 
-        for filename in os.listdir(self.directory):
+        # Resource is object - write to resource dir
+        with open(self.getObjectPath(resourceUrl) + "/" + 'Patch_' + str(patchRequestId) + ".json",
+                    'w') as outfile:
+            json.dump(generatedPatches[1], outfile)
+
+        # Resource is object - write to subject dir
+        for subjectId, value in generatedPatches[2].iteritems():
+            self.createResourceFolderStructure(self.getResourceId(subjectId))
+            with open(self.getSubjectPath(subjectId) + "/" + 'Patch_' + str(patchRequestId) + ".json",
+                      'w') as outfile:
+                json.dump(value, outfile)
+
+        # Resource is subject - write to object dir
+        for objectId, value in generatedPatches[3].iteritems():
+            self.createResourceFolderStructure(self.getResourceId(objectId))
+            with open(self.getObjectPath(objectId) + "/" + 'Patch_' + str(patchRequestId) + ".json",
+                      'w') as outfile:
+                json.dump(value, outfile)
+
+
+    def load(self, patchRequestUrl):
+        print('Loading patch requests for URL: ' + patchRequestUrl)
+
+        patchRequests = {}
+        patchRequests['deletedData'] = []
+        patchRequests['addedData'] = []
+
+        path = self.getSubjectPath(patchRequestUrl)
+        for filename in os.listdir(path):
             print('Reading from file: ' + filename)
-            g = Graph()
-            g.parse(self.directory + "/" + filename, format="nt")
-            patchRequests.append(PatchRequest(g, filename[6:][:-3], False))
+            with open(path + '/' + filename) as data_file:
+                data = json.load(data_file)
+                patchRequests['deletedData'].append(data['deletedData'])
+                patchRequests['addedData'].append(data['addedData'])
+
+        path = self.getObjectPath(patchRequestUrl)
+        for filename in os.listdir(path):
+            print('Reading from file: ' + filename)
+            with open(path + '/' + filename) as data_file:
+                data = json.load(data_file)
+                patchRequests['deletedData'].append(data['deletedData'])
+                patchRequests['addedData'].append(data['addedData'])
 
         return patchRequests
 
-    def getIdentifier(self):
-        max = 0
-        for filename in os.listdir(self.directory):
-            ## gotta find a way to prevent my Mac from generating these
-            ## sorry guys
-            if filename == ".DS_Store":
-                continue
-            idRegex = re.compile("(\d+)")
-            match = idRegex.search(filename)
-            actualId = match.group()
-            if max < int(actualId):
-                max = int(actualId)
-        return str(max + 1)
+    def generatePatchRequestJson(self, changeRequestJson):
+        subject =  changeRequestJson["resourceUrl"]
 
+        # JSON to be stored in the folder structure of the resource
+        resourceAsSubjectStoredInResource = {}
+        resourceAsSubjectStoredInResource['addedData'] = []
+        resourceAsSubjectStoredInResource['deletedData'] = []
 
+        # JSON to be stored in the folder structure of the resource
+        resourceAsObjectStoredInResource = {}
+        resourceAsObjectStoredInResource['addedData'] = []
+        resourceAsObjectStoredInResource['deletedData'] = []
 
-class PatchRequest():
-    def __init__(self, patchRequest, identifier, isFromJson):
-        self.identifier = identifier
-        if not isFromJson:
-            self.graph = patchRequest
-        else:
-            # Build graph representation of Patch request from JSON
+        # JSONs to be stored in the target folder structue
+        # (target, predicate, resource)/(resource, predicate, target)
+        resourceAsObjectStoredInTarget = {}
+        resourceAsSubjectStoredInTarget = {}
 
-            # Find subject
-            subject = patchRequest["url"]
+        for patch in changeRequestJson.get('addedData'):
+            if patch['subject'] == subject:
+                resourceAsSubjectStoredInResource['addedData'].append(patch)
+                if patch['object']['type'] == 'uri':
+                    resourceAsSubjectStoredInTarget[patch['object']['value']] = {}
+                    resourceAsSubjectStoredInTarget[patch['object']['value']]['addedData'] = []
+                    resourceAsSubjectStoredInTarget[patch['object']['value']]['deletedData'] = []
+                    resourceAsSubjectStoredInTarget[patch['object']['value']]['addedData'].append(patch)
 
-            self.graph = Graph()
+            else:
+                resourceAsObjectStoredInResource['addedData'].append(patch)
 
-            # First layer
-            self.graph.add((BNode(self.identifier.encode("utf-8")), RDF.type,
-                            URIRef("http://purl.org/hpi/patchr#Patch".encode("utf-8"))))
-            self.graph.add((BNode(self.identifier.encode("utf-8")),
-                            URIRef("http://purl.org/hpi/patchr#appliesTo".encode("utf-8")),
-                            URIRef(subject.encode("utf-8"))))
-            self.graph.add((BNode(self.identifier.encode("utf-8")),
-                            URIRef("http://purl.org/hpi/patchr#status".encode("utf-8")),
-                            URIRef("http://purl.org/hpi/patchr#Open".encode("utf-8"))))
-
-            # Update instruction layer
-            self.graph.add((BNode(self.identifier.encode("utf-8")),
-                            URIRef("http://purl.org/hpi/patchr#update".encode("utf-8")),
-                            BNode("updateInstruction".encode("utf-8"))))
-            self.graph.add((BNode("updateInstruction".encode("utf-8")), RDF.type,
-                            URIRef("http://webr3.org/owl/guo#UpdateInstruction".encode("utf-8"))))
-            self.graph.add((BNode("updateInstruction".encode("utf-8")),
-                            URIRef("http://webr3.org/owl/guo#target_graph".encode("utf-8")),
-                            URIRef(self.parseUrl(subject).encode("utf-8"))))
-            self.graph.add((BNode("updateInstruction".encode("utf-8")),
-                            URIRef("http://webr3.org/owl/guo#target_subject".encode("utf-8")),
-                            URIRef(subject.encode("utf-8"))))
-
-            # Delete and insert instructions layer
-            self.graph.add((BNode("updateInstruction".encode("utf-8")),
-                            URIRef("http://webr3.org/owl/guo#delete".encode("utf-8")),
-                            BNode("deleteInstruction".encode("utf-8"))))
-            self.graph.add((BNode("updateInstruction".encode("utf-8")),
-                            URIRef("http://webr3.org/owl/guo#insert".encode("utf-8")),
-                            BNode("insertInstruction".encode("utf-8"))))
-
-            for patch in patchRequest.get('addedData'):
-                objectType = patch.get('object').get('type')
-                if(objectType == 'literal' or objectType == 'text'):
-                    self.graph.add((BNode("insertInstruction"),URIRef(patch.get('predicate').encode("utf-8")),Literal(patch.get('object').get('value').encode("utf-8"))))
+                if patch['subject'] in resourceAsObjectStoredInTarget:
+                    resourceAsObjectStoredInTarget[patch['subject']]['addedData'].append(patch)
                 else:
-                    self.graph.add((BNode("insertInstruction"),URIRef(patch.get('predicate').encode("utf-8")),URIRef(patch.get('object').get('value').encode("utf-8"))))
+                    resourceAsObjectStoredInTarget[patch['subject']] = {}
+                    resourceAsObjectStoredInTarget[patch['subject']]['addedData'] = []
+                    resourceAsObjectStoredInTarget[patch['subject']]['deletedData'] = []
+                    resourceAsObjectStoredInTarget[patch['subject']]['addedData'].append(patch)
 
-            for patch in patchRequest.get('updatedData'):
-                objectType = patch.get('object').get('type')
-                if (objectType == 'literal' or objectType == 'text'):
-                    self.graph.add((BNode("insertInstruction"), URIRef(patch.get('predicate').encode("utf-8")),
-                                    Literal(patch.get('object').get('value').encode("utf-8"))))
+
+
+        for patch in changeRequestJson.get('deletedData'):
+            if patch['subject'] == subject:
+                resourceAsSubjectStoredInResource['deletedData'].append(patch)
+                if patch['object']['type'] == 'uri':
+                    resourceAsSubjectStoredInTarget[patch['object']['value']] = {}
+                    resourceAsSubjectStoredInTarget[patch['object']['value']]['addedData'] = []
+                    resourceAsSubjectStoredInTarget[patch['object']['value']]['deletedData'] = []
+                    resourceAsSubjectStoredInTarget[patch['object']['value']]['deletedData'].append(patch)
+
+            else:
+                resourceAsObjectStoredInResource['deletedData'].append(patch)
+
+                if patch['subject'] in resourceAsObjectStoredInTarget:
+                    resourceAsObjectStoredInTarget[patch['subject']]['deletedData'].append(patch)
                 else:
-                    self.graph.add((BNode("insertInstruction"), URIRef(patch.get('predicate').encode("utf-8")),
-                                    URIRef(patch.get('object').get('value').encode("utf-8"))))
+                    resourceAsObjectStoredInTarget[patch['subject']] = {}
+                    resourceAsObjectStoredInTarget[patch['subject']]['addedData'] = []
+                    resourceAsObjectStoredInTarget[patch['subject']]['deletedData'] = []
+                    resourceAsObjectStoredInTarget[patch['subject']]['deletedData'].append(patch)
 
-            for patch in patchRequest.get('deletedData'):
-                objectType = patch.get('object').get('type')
-                if (objectType == 'literal' or objectType == 'text'):
-                    self.graph.add((BNode("deleteInstruction"), URIRef(patch.get('predicate').encode("utf-8")),
-                                    Literal(patch.get('object').get('value').encode("utf-8"))))
-                else:
-                    self.graph.add((BNode("deleteInstruction"), URIRef(patch.get('predicate').encode("utf-8")),
-                                    URIRef(patch.get('object').get('value').encode("utf-8"))))
+        return [resourceAsSubjectStoredInResource, resourceAsObjectStoredInResource, resourceAsObjectStoredInTarget, resourceAsSubjectStoredInTarget]
 
-            # Was generated by layer
-            self.graph.add((BNode(self.identifier.encode("utf-8")),
-                            URIRef("http://purl.org/net/provenance/ns#wasGeneratedBy".encode("utf-8")),
-                            BNode("generatedBy".encode("utf-8"))))
-            self.graph.add((BNode("generatedBy".encode("utf-8")), RDF.type,
-                            URIRef("http://purl.org/net/provenance/ns#Activity".encode("utf-8"))))
-            self.graph.add((BNode("generatedBy".encode("utf-8")),
-                            URIRef("http://purl.org/net/provenance/ns#performedAt".encode("utf-8")),
-                            Literal(str(datetime.datetime.now()))))
+    def createResourceFolderStructure(self, resourceId):
+        if not os.path.exists(self.directory):
+            os.makedirs(self.directory)
 
-    def parseUrl(self, url):
-        try:
-            parsedUrl = urlparse(url)
-        except:
-            print('URL not parsed!')
-            return url
-        return parsedUrl.scheme + '://' + parsedUrl.netloc + '/'
+        baseDir = self.directory + "/" + resourceId
+        if not os.path.exists(baseDir):
+            os.makedirs(baseDir)
+            os.makedirs(baseDir + "/" + "as_subject")
+            os.makedirs(baseDir + "/" + "as_object")
 
-    def __str__(self):
-        return self.graph.serialize(format="nt")
+    def getResourceId(self, resourceUrl):
+        return resourceUrl.replace('/', '_')
+
+    def getSubjectPath(self, resourceName):
+        return self.directory + "/" + self.getResourceId(resourceName) + "/" + "as_subject"
+
+    def getObjectPath(self, resourceName):
+        return self.directory + "/" + self.getResourceId(resourceName) + "/" + "as_object"
