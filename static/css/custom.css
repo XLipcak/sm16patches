@@ -68,7 +68,12 @@ input.editable-mode {
     width: 100%;
     color: black;
 }
-
+input[type=text].editable-mode.valid {
+    background-color: #B4F0B8;
+}
+input[type=text].editable-mode.invalid {
+    background-color: #F0819B;
+}
 .panel-bottom {
     margin-bottom: 0;
 }
