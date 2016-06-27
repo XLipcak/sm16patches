@@ -66,6 +66,7 @@ ul#menu .active {
 input.editable-mode {
     display: inline-block;
     width: 100%;
+    color: black;
 }
 
 .panel-bottom {
