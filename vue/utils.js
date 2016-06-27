@@ -25,6 +25,11 @@ export default {
 	},
 
 	isUrl(data) {
-		return data.startsWith("http://") || data.startsWith("https://")
+		// this regex does not include non allowed characters yet
+		if (/https?:\/\/.*\..*\/.*/.exec(data).length === 1) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 }
