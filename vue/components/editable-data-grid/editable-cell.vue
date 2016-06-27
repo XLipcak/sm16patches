@@ -26,12 +26,17 @@ export default {
 		}
 	},
 	computed: {
+		value: function() {
+			return this.row[this.column]
+		},
 		valueIsUrl: function() {
-			return Utils.isUrl(this.row[this.column])
+			return Utils.isUrl(this.value)
 		},
 		valueIsValid: function() {
-			if (this.valueIsUrl) {
-				return true
+			if (this.datatype === 'uri') {
+				return this.valueIsUrl
+			} else if (this.datatype === 'literal') {
+				return !this.valueIsUrl
 			}
 			return false
 		},
