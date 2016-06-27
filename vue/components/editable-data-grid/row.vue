@@ -5,6 +5,7 @@
 			:editable-mode="editableMode"
 			:row="row"
 			:column="column"
+			:datatype="row.objectDatatype"
 		></editable-cell>
 	</td>
 	<td><button class="btn btn-danger glyphicon glyphicon-remove" v-show="editableMode" @click="removeRow(uuid)"></button></td>
@@ -16,6 +17,7 @@
 			:editable-mode="editableMode"
 			:row="row"
 			column="predicate"
+			:datatype="'uri'"
 		></editable-cell>
 	</td>
 	<td>
@@ -23,6 +25,7 @@
 			:editable-mode="editableMode"
 			:row="row"
 			column="object"
+			:datatype="row.objectDatatype"
 		></editable-cell>
 	</td>
 	<td><button class="btn btn-danger glyphicon glyphicon-remove" v-show="editableMode" @click="removeRow(uuid)"></button></td>
@@ -34,6 +37,7 @@
 			:editable-mode="editableMode"
 			:row="row"
 			column="predicate"
+			:datatype="'uri'"
 		></editable-cell> of 
 	</td>	
 	<td class="second">
@@ -41,6 +45,7 @@
 			:editable-mode="editableMode"
 			:row="row"
 			column="subject"
+			:datatype="row.objectDatatype"
 		></editable-cell>
 	</td>
 	<td><button class="btn btn-danger glyphicon glyphicon-remove" v-show="editableMode" @click="removeRow(uuid)"></button></td>

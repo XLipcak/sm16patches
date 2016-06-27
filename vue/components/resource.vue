@@ -225,7 +225,7 @@ export default {
 							subject: data.subject,
 							predicate: data.predicate, 
 							object: data.object,
-							objectDataType: data.objectDatatype,
+							objectDatatype: data.objectDatatype,
 						}
 					},
 					update (data, updatedRow) {
