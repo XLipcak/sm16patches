@@ -1,4 +1,4 @@
-<template>
+<template xmlns:v-bind="http://www.w3.org/1999/xhtml">
 	<input type="text" v-bind:class="['editable-mode', 'form-control', valueIsValid ? 'valid' : 'invalid']" v-if="editableMode" placeholder="{{ column }}" v-model="row[column]" />
 	<template v-else>
 		<a v-show="isUrl(row[column])" href="row[column]">{{ row[column] }}</a>

@@ -1,4 +1,4 @@
-<template>
+<template xmlns:v-on="http://www.w3.org/1999/xhtml">
 	<h1>RDF</h1>
 	<h2>About: <a href= "{{ url }}"> {{url}} </a> </h2>
 	<div class="form-group">
@@ -183,8 +183,8 @@ export default {
 							url,
 							row.predicate,
 							{
-								type: Utils.isUrl(row.object)
-									? "url" : "text", value: row.object
+								type: Utils.isUrl(row.object) ? "url" : "literal",
+								value: row.object
 							}
 						) 
 					},
@@ -192,36 +192,47 @@ export default {
 						return {
 							subject: data.subject,
 							predicate: data.predicate, 
-							object: data.object.value, 
+							object: data.object,
+							objectDatatype: data.objectDatatype,
 						}
 					},
 					update (data, updatedRow) {
 						data.subject = updatedRow.subject
 						data.predicate = updatedRow.predicate
-						data.object.value = updatedRow.object
+						data.object = updatedRow.object
+						data.objectDatatype = updatedRow.objectDatatype
 						return data
 					}
 				}
 			},
 
 			urlAsObject: {
-				triples: _.filter(triples, triple => _.isEqual(triple.object.value, this.url)),
+				triples: _.filter(triples, triple => _.isEqual(triple.object, this.url)),
 				mapping: {
 					columns: ['predicate', 'subject'],
 					create (row) {
-						return new RdfTriple.create(row.subject, row.predicate, { type: "url", value: url }) 
+						return new RdfTriple.create(
+								row.subject,
+								row.predicate,
+								{
+									type: "url",
+									value: url
+								}
+						)
 					},
 					read (data) {
 						return {
 							subject: data.subject,
 							predicate: data.predicate, 
-							object: data.object.value, 
+							object: data.object,
+							objectDataType: data.objectDatatype,
 						}
 					},
 					update (data, updatedRow) {
 						data.subject = updatedRow.subject
 						data.predicate = updatedRow.predicate
-						data.object.value = updatedRow.object
+						data.object = updatedRow.object
+						data.objectDatatype = updatedRow.objectDatatype
 						return data
 					}
 				}

@@ -6,7 +6,8 @@ export default {
 		return {
 			subject: subject,
 			predicate: predicate,
-			object: object
+			object: object.value,
+			objectDatatype: object.type,
 		}
 	},
 
