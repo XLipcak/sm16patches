@@ -1,5 +1,12 @@
-<template xmlns:v-bind="http://www.w3.org/1999/xhtml">
-	<input type="text" v-bind:class="['editable-mode', 'form-control', valueIsValid ? 'valid' : 'invalid']" v-if="editableMode" placeholder="{{ column }}" v-model="row[column]" />
+<template xmlns:v-bind="http://www.w3.org/1999/xhtml" xmlns:v-on="http://www.w3.org/1999/xhtml">
+	<input
+			id="{{uuid + 'input'}}"
+			type="text"
+			v-bind:class="['editable-mode', 'form-control', valueIsValid ? 'valid' : 'invalid']"
+			v-if="editableMode" placeholder="{{ column }}"
+			v-model="row[column]"
+			v-on:keyup="autocomplete"
+	/>
 	<template v-else>
 		<a v-show="isUrl(row[column])" href="row[column]">{{ row[column] }}</a>
 		<span v-show="!isUrl(row[column])">{{ row[column] }}</span>	
@@ -14,6 +21,7 @@ export default {
 		row: Object,
 		column: String,
 		datatype: String,
+		uuid: String,
 		editableMode: {
 			type: Boolean,
 			default: true,
@@ -23,7 +31,37 @@ export default {
 	methods: {
 		isUrl (data) {
 			return Utils.isUrl(data)
-		}
+		},
+		autocomplete () {
+			if (this.column !== "predicate") return null;
+
+			var searchString = $("#" + this.uuid + "input").val()
+			searchString = searchString.split("/").slice(-1)[0]
+
+			if (searchString === "") {
+				return null;
+			}
+
+			let apiUrl = "http://lov.okfn.org/dataset/lov/api/v2/term/search?q=" + searchString + "&type=property&page_size=100"
+			let inputId = this.uuid + 'input'
+			let autocompleteSource = []
+
+			let xhr = new XMLHttpRequest()
+			xhr.onreadystatechange = function() {
+				if (xhr.readyState == XMLHttpRequest.DONE) {
+					let response = JSON.parse(xhr.response)
+					response.results.forEach( function(entry) {
+						autocompleteSource.push(entry.uri[0])
+					})
+					$("#"+inputId).autocomplete({
+						source: autocompleteSource,
+					})
+				}
+			}
+
+			xhr.open('GET', apiUrl)
+			xhr.send();
+		},
 	},
 	computed: {
 		value: function() {

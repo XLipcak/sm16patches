@@ -8,10 +8,14 @@
 	<!-- Optional theme -->
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
 
-	<link rel="stylesheet" type="text/css" href="{{ static_url("css/custom.css") }}">
-
+    <link rel="stylesheet" type="text/css" href="{{ static_url("css/jquery-ui.min.css") }}">
+    <link rel="stylesheet" type="text/css" href="{{ static_url("css/jquery-ui.theme.min.css") }}">
+    <link rel="stylesheet" type="text/css" href="{{ static_url("css/jquery-ui.structure.min.css") }}">
+    <link rel="stylesheet" type="text/css" href="{{ static_url("css/custom.css") }}">
 	<!-- Latest compiled and minified JavaScript -->
 	<script type="text/javascript" src="{{static_url("js/jquery-2.2.3.min.js")}}"></script>
+
+    <script type="text/javascript" src="{{static_url("js/jquery-ui.min.js")}}"></script>
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
 </head>
 <body>
@@ -19,21 +23,6 @@
 		<li><a class="active" href="{{reverse_url('main')}}">Resources</a></li>
 		<li><a href="{{reverse_url('patch_list')}}">Patch requests</a></li>
 	</ul>
-
-<!--hr>
-EDITABLE DATAGRID DEMO START
-<div id="editable-data-grid-demo">
-	<form id="search">
-		Search <input name="query" v-model="searchQuery">
-	</form>
-	<editable-data-grid
-		:data="gridData"
-		:columns="gridColumns"
-		:filter-key="searchQuery">
-	</editable-data-grid>
-</div>	
-EDITABLE DATAGRID DEMO END
-<hr-->
 
 <div class="container">
 	{% block content %}{% end %}
