@@ -80,5 +80,8 @@ input[type=text].editable-mode.invalid {
 .ui-autocomplete {
     position:absolute;
     cursor:default;
-    z-index:1001 !important
+    z-index:1001 !important;
+    max-height: 500px;
+    overflow-y: auto;   /* prevent horizontal scrollbar */
+    overflow-x: hidden; /* add padding to account for vertical scrollbar */
 }

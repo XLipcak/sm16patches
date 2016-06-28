@@ -22,7 +22,6 @@ export default {
 		column: String,
 		datatype: String,
 		uuid: String,
-		xhr: Function,
 		editableMode: {
 			type: Boolean,
 			default: true,
@@ -35,33 +34,34 @@ export default {
 		},
 		autocomplete () {
 			if (this.column !== "predicate") return null;
-			try {
-				this.xhr.abort()
-			} catch (e) {
-				console.log(e)
-			} finally {
-				var searchString = $("#" + this.uuid + "input").val()
-				searchString = searchString.split("/").slice(-1)[0]
-				let apiUrl = "http://lov.okfn.org/dataset/lov/api/v2/term/search?q=" + searchString + "&type=property&page_size=100"
-				let inputId = this.uuid + 'input'
-				let autocompleteSource = []
 
-				let source = [
-					"nutte",
-					"hurensohn",
-				]
-				this.xhr = $.get(apiUrl).success( function(response) {
+			var searchString = $("#" + this.uuid + "input").val()
+			searchString = searchString.split("/").slice(-1)[0]
+
+			if (searchString === "") {
+				return null;
+			}
+
+			let apiUrl = "http://lov.okfn.org/dataset/lov/api/v2/term/search?q=" + searchString + "&type=property&page_size=100"
+			let inputId = this.uuid + 'input'
+			let autocompleteSource = []
+
+			let xhr = new XMLHttpRequest()
+			xhr.onreadystatechange = function() {
+				if (xhr.readyState == XMLHttpRequest.DONE) {
+					let response = JSON.parse(xhr.response)
 					response.results.forEach( function(entry) {
-						console.log(entry.uri[0])
 						autocompleteSource.push(entry.uri[0])
 					})
 					$("#"+inputId).autocomplete({
 						source: autocompleteSource,
 					})
-				})
-
+				}
 			}
-		}
+
+			xhr.open('GET', apiUrl)
+			xhr.send();
+		},
 	},
 	computed: {
 		value: function() {
