@@ -18,6 +18,7 @@
 			:row="row"
 			column="predicate"
 			:datatype="'uri'"
+			:uuid="uuid + 'predicate'"
 		></editable-cell>
 	</td>
 	<td>
