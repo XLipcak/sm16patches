@@ -27,30 +27,23 @@ class PatchRequestPersistence:
         print('Saving patch request with id: ' + str(patchRequestId))
 
         # generate list of JSON dictionaries which will be written into different files
-        generatedPatches = self.generatePatchRequestJson(changeRequestJson)
+        generatedPatches = self.generatePatchRequestJsonGroupedByURI(changeRequestJson)
 
-        # Resource is subject - write to resource dir
-        with open(self.getSubjectPath(resourceUrl) + "/" + 'Patch_' + str(patchRequestId) + ".json", 'w') as outfile:
-            json.dump(generatedPatches[0], outfile)
-
-        # Resource is object - write to resource dir
-        with open(self.getObjectPath(resourceUrl) + "/" + 'Patch_' + str(patchRequestId) + ".json",
-                    'w') as outfile:
-            json.dump(generatedPatches[1], outfile)
-
-        # Resource is object - write to subject dir
-        for subjectId, value in generatedPatches[2].iteritems():
+        # Resource is subject
+        for subjectId, value in generatedPatches[0].iteritems():
             self.createResourceFolderStructure(self.getResourceId(subjectId))
             with open(self.getSubjectPath(subjectId) + "/" + 'Patch_' + str(patchRequestId) + ".json",
                       'w') as outfile:
                 json.dump(value, outfile)
 
-        # Resource is subject - write to object dir
-        for objectId, value in generatedPatches[3].iteritems():
+        # Resource is object
+        for objectId, value in generatedPatches[1].iteritems():
             self.createResourceFolderStructure(self.getResourceId(objectId))
             with open(self.getObjectPath(objectId) + "/" + 'Patch_' + str(patchRequestId) + ".json",
                       'w') as outfile:
                 json.dump(value, outfile)
+
+
 
 
     def load(self, patchRequestUrl):
@@ -60,6 +53,7 @@ class PatchRequestPersistence:
         patchRequests['deletedData'] = []
         patchRequests['addedData'] = []
 
+        # patchRequestUrl not specified => LOAD all patch requests
         if patchRequestUrl == '':
             for root, dirs, files in os.walk(self.directory):
                 for file in files:
@@ -70,6 +64,7 @@ class PatchRequestPersistence:
                         patchRequests['addedData'].append(data['addedData'])
             return patchRequests
 
+        # patchRequestUrl specified => LOAD all patch requests where it appears as subject or object
         path = self.getSubjectPath(patchRequestUrl)
         for filename in os.listdir(path):
             print('Reading from file: ' + filename)
@@ -88,67 +83,96 @@ class PatchRequestPersistence:
 
         return patchRequests
 
-    def generatePatchRequestJson(self, changeRequestJson):
+    def generatePatchRequestJsonGroupedByURI(self, changeRequestJson):
         subject =  changeRequestJson["resourceUrl"]
 
-        # JSON to be stored in the folder structure of the resource
-        resourceAsSubjectStoredInResource = {}
-        resourceAsSubjectStoredInResource['addedData'] = []
-        resourceAsSubjectStoredInResource['deletedData'] = []
-
-        # JSON to be stored in the folder structure of the resource
-        resourceAsObjectStoredInResource = {}
-        resourceAsObjectStoredInResource['addedData'] = []
-        resourceAsObjectStoredInResource['deletedData'] = []
-
-        # JSONs to be stored in the target folder structue
-        # (target, predicate, resource)/(resource, predicate, target)
-        resourceAsObjectStoredInTarget = {}
-        resourceAsSubjectStoredInTarget = {}
+        # Dictionaries of JSONs grouped by subject/object
+        groupWhereResourceIsSubject = {}
+        groupWhereResourceIsObject = {}
 
         for patch in changeRequestJson.get('addedData'):
             if patch['subject'] == subject:
-                resourceAsSubjectStoredInResource['addedData'].append(patch)
+                # Resource is subject
+                if patch['subject'] in groupWhereResourceIsSubject:
+                    groupWhereResourceIsSubject[patch['subject']]['addedData'].append(patch)
+                else:
+                    groupWhereResourceIsSubject[patch['subject']] = {}
+                    groupWhereResourceIsSubject[patch['subject']]['addedData'] = []
+                    groupWhereResourceIsSubject[patch['subject']]['deletedData'] = []
+                    groupWhereResourceIsSubject[patch['subject']]['addedData'].append(patch)
+
+                # Resource is subject, object is URI
                 if patch['objectDatatype'] == 'uri':
-                    resourceAsSubjectStoredInTarget[patch['object']] = {}
-                    resourceAsSubjectStoredInTarget[patch['object']]['addedData'] = []
-                    resourceAsSubjectStoredInTarget[patch['object']]['deletedData'] = []
-                    resourceAsSubjectStoredInTarget[patch['object']]['addedData'].append(patch)
+                    if patch['object'] in groupWhereResourceIsObject:
+                        groupWhereResourceIsObject[patch['object']]['addedData'].append(patch)
+                    else:
+                        groupWhereResourceIsObject[patch['object']] = {}
+                        groupWhereResourceIsObject[patch['object']]['addedData'] = []
+                        groupWhereResourceIsObject[patch['object']]['deletedData'] = []
+                        groupWhereResourceIsObject[patch['object']]['addedData'].append(patch)
 
             else:
-                resourceAsObjectStoredInResource['addedData'].append(patch)
-
-                if patch['subject'] in resourceAsObjectStoredInTarget:
-                    resourceAsObjectStoredInTarget[patch['subject']]['addedData'].append(patch)
+                # Resource is object
+                if patch['object'] in groupWhereResourceIsObject:
+                    groupWhereResourceIsObject[patch['object']]['addedData'].append(patch)
                 else:
-                    resourceAsObjectStoredInTarget[patch['subject']] = {}
-                    resourceAsObjectStoredInTarget[patch['subject']]['addedData'] = []
-                    resourceAsObjectStoredInTarget[patch['subject']]['deletedData'] = []
-                    resourceAsObjectStoredInTarget[patch['subject']]['addedData'].append(patch)
+                    groupWhereResourceIsObject[patch['object']] = {}
+                    groupWhereResourceIsObject[patch['object']]['addedData'] = []
+                    groupWhereResourceIsObject[patch['object']]['deletedData'] = []
+                    groupWhereResourceIsObject[patch['object']]['addedData'].append(patch)
+
+                # Resource is object => subject is URI
+                if patch['subject'] in groupWhereResourceIsSubject:
+                    groupWhereResourceIsSubject[patch['subject']]['addedData'].append(patch)
+                else:
+                    groupWhereResourceIsSubject[patch['subject']] = {}
+                    groupWhereResourceIsSubject[patch['subject']]['addedData'] = []
+                    groupWhereResourceIsSubject[patch['subject']]['deletedData'] = []
+                    groupWhereResourceIsSubject[patch['subject']]['addedData'].append(patch)
 
 
 
         for patch in changeRequestJson.get('deletedData'):
             if patch['subject'] == subject:
-                resourceAsSubjectStoredInResource['deletedData'].append(patch)
+                # Resource is subject
+                if patch['subject'] in groupWhereResourceIsSubject:
+                    groupWhereResourceIsSubject[patch['subject']]['deletedData'].append(patch)
+                else:
+                    groupWhereResourceIsSubject[patch['subject']] = {}
+                    groupWhereResourceIsSubject[patch['subject']]['addedData'] = []
+                    groupWhereResourceIsSubject[patch['subject']]['deletedData'] = []
+                    groupWhereResourceIsSubject[patch['subject']]['deletedData'].append(patch)
+
+                # Resource is subject, object is URI
                 if patch['objectDatatype'] == 'uri':
-                    resourceAsSubjectStoredInTarget[patch['object']] = {}
-                    resourceAsSubjectStoredInTarget[patch['object']]['addedData'] = []
-                    resourceAsSubjectStoredInTarget[patch['object']]['deletedData'] = []
-                    resourceAsSubjectStoredInTarget[patch['object']]['deletedData'].append(patch)
+                    if patch['object'] in groupWhereResourceIsObject:
+                        groupWhereResourceIsObject[patch['object']]['deletedData'].append(patch)
+                    else:
+                        groupWhereResourceIsObject[patch['object']] = {}
+                        groupWhereResourceIsObject[patch['object']]['addedData'] = []
+                        groupWhereResourceIsObject[patch['object']]['deletedData'] = []
+                        groupWhereResourceIsObject[patch['object']]['deletedData'].append(patch)
 
             else:
-                resourceAsObjectStoredInResource['deletedData'].append(patch)
-
-                if patch['subject'] in resourceAsObjectStoredInTarget:
-                    resourceAsObjectStoredInTarget[patch['subject']]['deletedData'].append(patch)
+                # Resource is object
+                if patch['object'] in groupWhereResourceIsObject:
+                    groupWhereResourceIsObject[patch['object']]['deletedData'].append(patch)
                 else:
-                    resourceAsObjectStoredInTarget[patch['subject']] = {}
-                    resourceAsObjectStoredInTarget[patch['subject']]['addedData'] = []
-                    resourceAsObjectStoredInTarget[patch['subject']]['deletedData'] = []
-                    resourceAsObjectStoredInTarget[patch['subject']]['deletedData'].append(patch)
+                    groupWhereResourceIsObject[patch['object']] = {}
+                    groupWhereResourceIsObject[patch['object']]['addedData'] = []
+                    groupWhereResourceIsObject[patch['object']]['deletedData'] = []
+                    groupWhereResourceIsObject[patch['object']]['deletedData'].append(patch)
 
-        return [resourceAsSubjectStoredInResource, resourceAsObjectStoredInResource, resourceAsObjectStoredInTarget, resourceAsSubjectStoredInTarget]
+                # Resource is object => subject is URI
+                if patch['subject'] in groupWhereResourceIsSubject:
+                    groupWhereResourceIsSubject[patch['subject']]['deletedData'].append(patch)
+                else:
+                    groupWhereResourceIsSubject[patch['subject']] = {}
+                    groupWhereResourceIsSubject[patch['subject']]['addedData'] = []
+                    groupWhereResourceIsSubject[patch['subject']]['deletedData'] = []
+                    groupWhereResourceIsSubject[patch['subject']]['deletedData'].append(patch)
+
+        return [groupWhereResourceIsSubject, groupWhereResourceIsObject]
 
     def createResourceFolderStructure(self, resourceId):
         if not os.path.exists(self.directory):
