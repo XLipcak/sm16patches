@@ -6,6 +6,3 @@ resource_cache/*
 .idea/
 node_modules/
 static/js/vue-app.build.js
-static/js/vue-app.build.js.map
-*vue-app.build.js.*
-
