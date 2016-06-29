@@ -99,7 +99,7 @@ class PatchRequestPersistence:
         for patch in changeRequestJson.get('addedData'):
             if patch['subject'] == subject:
                 resourceAsSubjectStoredInResource['addedData'].append(patch)
-                if patch['object']['type'] == 'uri':
+                if patch['objectDatatype'] == 'uri':
                     resourceAsSubjectStoredInTarget[patch['object']['value']] = {}
                     resourceAsSubjectStoredInTarget[patch['object']['value']]['addedData'] = []
                     resourceAsSubjectStoredInTarget[patch['object']['value']]['deletedData'] = []
@@ -121,7 +121,7 @@ class PatchRequestPersistence:
         for patch in changeRequestJson.get('deletedData'):
             if patch['subject'] == subject:
                 resourceAsSubjectStoredInResource['deletedData'].append(patch)
-                if patch['object']['type'] == 'uri':
+                if patch['objectDatatype'] == 'uri':
                     resourceAsSubjectStoredInTarget[patch['object']['value']] = {}
                     resourceAsSubjectStoredInTarget[patch['object']['value']]['addedData'] = []
                     resourceAsSubjectStoredInTarget[patch['object']['value']]['deletedData'] = []
