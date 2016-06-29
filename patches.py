@@ -60,6 +60,16 @@ class PatchRequestPersistence:
         patchRequests['deletedData'] = []
         patchRequests['addedData'] = []
 
+        if patchRequestUrl == '':
+            for root, dirs, files in os.walk(self.directory):
+                for file in files:
+                    print('Reading from file: ' + file)
+                    with open(os.path.join(root, file), "r") as data_file:
+                        data = json.load(data_file)
+                        patchRequests['deletedData'].append(data['deletedData'])
+                        patchRequests['addedData'].append(data['addedData'])
+            return patchRequests
+
         path = self.getSubjectPath(patchRequestUrl)
         for filename in os.listdir(path):
             print('Reading from file: ' + filename)
@@ -100,10 +110,10 @@ class PatchRequestPersistence:
             if patch['subject'] == subject:
                 resourceAsSubjectStoredInResource['addedData'].append(patch)
                 if patch['objectDatatype'] == 'uri':
-                    resourceAsSubjectStoredInTarget[patch['object']['value']] = {}
-                    resourceAsSubjectStoredInTarget[patch['object']['value']]['addedData'] = []
-                    resourceAsSubjectStoredInTarget[patch['object']['value']]['deletedData'] = []
-                    resourceAsSubjectStoredInTarget[patch['object']['value']]['addedData'].append(patch)
+                    resourceAsSubjectStoredInTarget[patch['object']] = {}
+                    resourceAsSubjectStoredInTarget[patch['object']]['addedData'] = []
+                    resourceAsSubjectStoredInTarget[patch['object']]['deletedData'] = []
+                    resourceAsSubjectStoredInTarget[patch['object']]['addedData'].append(patch)
 
             else:
                 resourceAsObjectStoredInResource['addedData'].append(patch)
@@ -122,10 +132,10 @@ class PatchRequestPersistence:
             if patch['subject'] == subject:
                 resourceAsSubjectStoredInResource['deletedData'].append(patch)
                 if patch['objectDatatype'] == 'uri':
-                    resourceAsSubjectStoredInTarget[patch['object']['value']] = {}
-                    resourceAsSubjectStoredInTarget[patch['object']['value']]['addedData'] = []
-                    resourceAsSubjectStoredInTarget[patch['object']['value']]['deletedData'] = []
-                    resourceAsSubjectStoredInTarget[patch['object']['value']]['deletedData'].append(patch)
+                    resourceAsSubjectStoredInTarget[patch['object']] = {}
+                    resourceAsSubjectStoredInTarget[patch['object']]['addedData'] = []
+                    resourceAsSubjectStoredInTarget[patch['object']]['deletedData'] = []
+                    resourceAsSubjectStoredInTarget[patch['object']]['deletedData'].append(patch)
 
             else:
                 resourceAsObjectStoredInResource['deletedData'].append(patch)
