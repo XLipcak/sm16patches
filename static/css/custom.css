@@ -85,3 +85,11 @@ input[type=text].editable-mode.invalid {
     overflow-y: auto;   /* prevent horizontal scrollbar */
     overflow-x: hidden; /* add padding to account for vertical scrollbar */
 }
+
+tr#delete{
+    color:red;
+}
+
+tr#add{
+    color:green;
+}

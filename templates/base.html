@@ -20,8 +20,9 @@
 </head>
 <body>
 	<ul id="menu">
-		<li><a class="active" href="{{reverse_url('main')}}">Resources</a></li>
-		<li><a href="{{reverse_url('patch_list')}}">Patch requests</a></li>
+		<div class="container">
+			{% block menu %}{% end %}
+		</div>
 	</ul>
 
 <div class="container">
