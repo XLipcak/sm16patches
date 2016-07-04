@@ -1,5 +1,10 @@
 ## Setup
-Install NodeJS dependencies
+Install Node.JS: 
+  * Install at least version 4.x.x 
+  * For Windows or Mac, download and isntall the binaries here: https://nodejs.org/en/download/
+  * For Linux, compile from sources or install from [recommended Node.JS repository](https://nodejs.org/en/download/package-manager/) rather than Linux distribution default repository. The default repository is likely to contain an outdated version, as Node.JS is developing very fast.
+
+Install Node.JS project dependencies
 ```
 npm install
 ```

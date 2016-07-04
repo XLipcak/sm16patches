@@ -233,7 +233,7 @@ def buildNaiveJsonFromGraph(graph, url, filename):
             jsonDict["data"][sub][pred].append(
                 {
                     "type": "literal",
-                    "value": obj
+                    "value": "\"" + obj + "\""
                 }
             )
         else:
