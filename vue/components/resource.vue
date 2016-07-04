@@ -37,7 +37,7 @@
 				<button type="button" class="btn btn-default" data-toggle="modal" data-target="#patchModal">
 					View changes
 				</button>
-				<button type="button" class="btn btn-primary" v-on:click="postPatchRequest">Submit Patch Request</button>
+				<button id="submitPatch" type="button" class="btn btn-primary" v-on:click="postPatchRequest">Submit Patch Request</button>
 			</div>
 		</div>	
 	</div>
@@ -246,24 +246,45 @@ export default {
 			this.isEditableMode = !this.isEditableMode 
 		},
 		postPatchRequest() {
-			var patchJson = Object()
-			patchJson.resourceUrl = this.url
+			let valid = true
+			for (var i = 0; i < this.$children.length; i++) {
+				let grid = this.$children[i]
+				for (var j = 0; j < grid.$children.length; j++) {
+					let row = grid.$children[j]
+					for (var k = 0; k < row.$children.length; k++) {
+						let cell = row.$children[k]
+						if (cell.cssClass === 'invalid') {
+							valid = false
+						}
+					}
+				}
+			}
 
-			patchJson.addedData = [].concat(
-				this.$refs.dataGridSubject.addedData,
-				_.map(this.$refs.dataGridSubject.updatedData, d => d.to),
-				this.$refs.dataGridObject.addedData,
-				_.map(this.$refs.dataGridObject.updatedData, d => d.to)
-			)
+			if (!valid) {
+				alert("There are invalid triples. Please fix them and submit again.")
+			} else {
+				var patchJson = Object()
+				patchJson.resourceUrl = this.url
 
-			patchJson.deletedData = [].concat(
-				this.$refs.dataGridSubject.deletedData,
-				_.map(this.$refs.dataGridSubject.updatedData, d => d.from),
-				this.$refs.dataGridObject.deletedData,
-				_.map(this.$refs.dataGridObject.updatedData, d => d.from)
-			)
+				patchJson.addedData = [].concat(
+					this.$refs.dataGridSubject.addedData,
+					_.map(this.$refs.dataGridSubject.updatedData, d => d.to),
+					this.$refs.dataGridObject.addedData,
+					_.map(this.$refs.dataGridObject.updatedData, d => d.to)
+				)
 
-			$.post("/patch_requests", JSON.stringify(patchJson))
+				patchJson.deletedData = [].concat(
+					this.$refs.dataGridSubject.deletedData,
+					_.map(this.$refs.dataGridSubject.updatedData, d => d.from),
+					this.$refs.dataGridObject.deletedData,
+					_.map(this.$refs.dataGridObject.updatedData, d => d.from)
+				)
+
+				$.post("/patch_requests", JSON.stringify(patchJson), function(response) {
+					//TODO: nicer way of notification
+					alert(response)
+				})
+			}
 		}
 	}
 }

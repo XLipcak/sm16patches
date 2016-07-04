@@ -131,11 +131,14 @@ class PatchRequestHandler(tornado.web.RequestHandler):
         print('Received JSON:')
         print(patchRequestJson)
 
+        self.write("Patch request submitted!")
+
         #print(patchRequestJson["resourceUrl"])
         #print(patchRequestJson["filename"])
 
         patchRequestPersistence = PatchRequestPersistence('patch_request_storage')
         patchRequestPersistence.save(patchRequestJson)
+
 
 def performGetRequest(url):
     ## try to find out 'last modified' of the resource

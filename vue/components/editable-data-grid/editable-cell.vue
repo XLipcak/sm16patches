@@ -33,7 +33,7 @@ export default {
 			return Utils.isUrl(data)
 		},
 		parseLiteral (value) {
-			let literalRegex = new RegExp(["(\".*\")(\\^\\^xsd:(?:anyURI|boolean|date|dateTime|double|float|gDay|gMonth|",
+			let literalRegex = new RegExp(["^(\".*\")(\\^\\^xsd:(?:anyURI|boolean|date|dateTime|double|float|gDay|gMonth|",
 					"gMonthDay|gYear|gYearMonth|integer|negativeInteger|nonNegativeInteger|nonPositiveInteger|positiveInteger|string|time))?"].join(''))
 			let match = value.match(literalRegex)
 
@@ -69,9 +69,6 @@ export default {
 			xhr.open('GET', apiUrl)
 			xhr.send()
 		},
-		onPropertyGetSuccess(response) {
-			console.log(reponse)
-		}
 	},
 	computed: {
 		value: function() {

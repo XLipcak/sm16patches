@@ -26,7 +26,7 @@ export default {
 
 	isUrl(data) {
 		// this regex does not include non allowed characters yet
-		var matchCount = /https?:\/\/.*\..*\/.*/.exec(data)
+		var matchCount = /^https?:\/\/.*\..*\/.*/.exec(data)
 		if (matchCount && matchCount.length === 1) {
 			return true;
 		} else {
