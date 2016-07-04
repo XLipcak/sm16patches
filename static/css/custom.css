@@ -74,6 +74,9 @@ input[type=text].editable-mode.valid {
 input[type=text].editable-mode.invalid {
     background-color: #F0819B;
 }
+input[type=text].editable-mode.incomplete {
+    background-color: #f0eb8f;
+}
 .panel-bottom {
     margin-bottom: 0;
 }

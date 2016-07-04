@@ -2,7 +2,7 @@
 	<input
 			id="{{uuid + 'input'}}"
 			type="text"
-			v-bind:class="['editable-mode', 'form-control', valueIsValid ? 'valid' : 'invalid']"
+			class="editable-mode form-control {{cssClass}}"
 			v-if="editableMode" placeholder="{{ column }}"
 			v-model="row[column]"
 			v-on:keyup="autocomplete"
@@ -36,16 +36,7 @@ export default {
 			let literalRegex = new RegExp(["(\".*\")(\\^\\^xsd:(?:anyURI|boolean|date|dateTime|double|float|gDay|gMonth|",
 					"gMonthDay|gYear|gYearMonth|integer|negativeInteger|nonNegativeInteger|nonPositiveInteger|positiveInteger|string|time))?"].join(''))
 			let match = value.match(literalRegex)
-			if (match) {
-				if (match[2]) {
-					console.log("WITH datatype")
-				} else {
-					console.log("WITHOUT datatype")
-				}
-			} else {
-				console.log("url")
-			}
-			console.log(match)
+
 			return match
 		},
 		autocomplete () {
@@ -90,15 +81,32 @@ export default {
 			return Utils.isUrl(this.value)
 		},
 		valueIsLiteral: function() {
-			return this.parseLiteral(this.value)
-		},
-		valueIsValid: function() {
-			if (this.datatype === 'uri') {
-				return this.valueIsUrl
-			} else if (this.datatype === 'literal') {
-				return !this.valueIsUrl
+			let match = this.parseLiteral(this.value)
+			if (match) {
+				return true
 			}
 			return false
+		},
+		valueIsLiteralWithDatatype: function() {
+			let match = this.parseLiteral(this.value)
+			if (match && match[2]) {
+				return true
+			}
+			return false
+		},
+		cssClass: function() {
+			if (this.datatype === 'uri') {
+				if (this.valueIsUrl) {
+					return 'valid'
+				}
+			} else if (this.datatype === 'literal') {
+				if (this.valueIsLiteralWithDatatype) {
+					return 'valid'
+				} else if (this.valueIsLiteral) {
+					return 'incomplete'
+				}
+			}
+			return 'invalid'
 		},
 	},
 }
