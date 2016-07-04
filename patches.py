@@ -34,6 +34,7 @@ class PatchRequestPersistence:
             self.createResourceFolderStructure(self.getResourceId(subjectId))
             with open(self.getSubjectPath(subjectId) + "/" + 'Patch_' + str(patchRequestId) + ".json",
                       'w') as outfile:
+                value['resourceUrl'] = subjectId
                 value['timestamp'] = time.strftime("%c")
                 json.dump(value, outfile)
 
@@ -42,6 +43,7 @@ class PatchRequestPersistence:
             self.createResourceFolderStructure(self.getResourceId(objectId))
             with open(self.getObjectPath(objectId) + "/" + 'Patch_' + str(patchRequestId) + ".json",
                       'w') as outfile:
+                value['timestamp'] = time.strftime("%c")
                 json.dump(value, outfile)
 
 
@@ -56,49 +58,51 @@ class PatchRequestPersistence:
                 if "as_object" not in root:
                     for file in files:
                         print('Reading from file: ' + file)
-                        id = int(filter(str.isdigit, file))
-
-                        if str(id) not in patchRequests:
-                            patchRequests[str(id)] = {}
-                            patchRequests[str(id)]['deletedData'] = []
-                            patchRequests[str(id)]['addedData'] = []
-                            patchRequests[str(id)]['timestamp'] = time.strftime("%c")
-
                         with open(os.path.join(root, file), "r") as data_file:
                             data = json.load(data_file)
+                            id = data['resourceUrl']
+                            if id not in patchRequests:
+                                patchRequests[str(id)] = {}
+                                patchRequests[str(id)]['deletedData'] = []
+                                patchRequests[str(id)]['addedData'] = []
+
                             patchRequests[str(id)]['deletedData'].append(data['deletedData'])
                             patchRequests[str(id)]['addedData'].append(data['addedData'])
+                            patchRequests[str(id)]['timestamp'] = data['timestamp']
             return patchRequests
 
         # patchRequestUrl specified => LOAD all patch requests where it appears as subject or object
         path = self.getSubjectPath(patchRequestUrl)
         for filename in os.listdir(path):
             print('Reading from file: ' + filename)
-            id = int(filter(str.isdigit, str(filename)))
-            if str(id) not in patchRequests:
-                patchRequests[str(id)] = {}
-                patchRequests[str(id)]['deletedData'] = []
-                patchRequests[str(id)]['addedData'] = []
-                patchRequests[str(id)]['timestamp'] = time.strftime("%c")
 
             with open(path + '/' + filename) as data_file:
                 data = json.load(data_file)
+                id = data['resourceUrl']
+                if id not in patchRequests:
+                    patchRequests[str(id)] = {}
+                    patchRequests[str(id)]['deletedData'] = []
+                    patchRequests[str(id)]['addedData'] = []
+
                 patchRequests[str(id)]['deletedData'].append(data['deletedData'])
                 patchRequests[str(id)]['addedData'].append(data['addedData'])
+                patchRequests[str(id)]['timestamp'] = data['timestamp']
 
         path = self.getObjectPath(patchRequestUrl)
         for filename in os.listdir(path):
             print('Reading from file: ' + filename)
-            id = int(filter(str.isdigit, str(filename)))
-            if str(id) not in patchRequests:
-                patchRequests[str(id)] = {}
-                patchRequests[str(id)]['deletedData'] = []
-                patchRequests[str(id)]['addedData'] = []
-                patchRequests[str(id)]['timestamp'] = time.strftime("%c")
+
             with open(path + '/' + filename) as data_file:
                 data = json.load(data_file)
+                id = data['resourceUrl']
+                if id not in patchRequests:
+                    patchRequests[str(id)] = {}
+                    patchRequests[str(id)]['deletedData'] = []
+                    patchRequests[str(id)]['addedData'] = []
+
                 patchRequests[str(id)]['deletedData'].append(data['deletedData'])
                 patchRequests[str(id)]['addedData'].append(data['addedData'])
+                patchRequests[str(id)]['timestamp'] = data['timestamp']
 
         return patchRequests
 
