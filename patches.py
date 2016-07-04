@@ -204,7 +204,7 @@ class PatchRequestPersistence:
             os.makedirs(baseDir + "/" + "as_object")
 
     def getResourceId(self, resourceUrl):
-        return resourceUrl.replace('/', '_')
+        return resourceUrl.replace('/', '_').replace(':', '_')
 
     def getSubjectPath(self, resourceName):
         return self.directory + "/" + self.getResourceId(resourceName) + "/" + "as_subject"
