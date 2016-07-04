@@ -9,7 +9,7 @@
 	/>
 	<template v-else>
 		<a v-show="isUrl(row[column])" href="row[column]">{{ row[column] }}</a>
-		<span v-show="!isUrl(row[column])">{{ row[column] }}</span>	
+		<span v-show="!isUrl(row[column])">{{ row[column] }}</span>
 	</template>
 </template>
 
@@ -31,6 +31,22 @@ export default {
 	methods: {
 		isUrl (data) {
 			return Utils.isUrl(data)
+		},
+		parseLiteral (value) {
+			let literalRegex = new RegExp(["(\".*\")(\\^\\^xsd:(?:anyURI|boolean|date|dateTime|double|float|gDay|gMonth|",
+					"gMonthDay|gYear|gYearMonth|integer|negativeInteger|nonNegativeInteger|nonPositiveInteger|positiveInteger|string|time))?"].join(''))
+			let match = value.match(literalRegex)
+			if (match) {
+				if (match[2]) {
+					console.log("WITH datatype")
+				} else {
+					console.log("WITHOUT datatype")
+				}
+			} else {
+				console.log("url")
+			}
+			console.log(match)
+			return match
 		},
 		autocomplete () {
 			if (this.column !== "predicate") return null;
@@ -60,8 +76,11 @@ export default {
 			}
 
 			xhr.open('GET', apiUrl)
-			xhr.send();
+			xhr.send()
 		},
+		onPropertyGetSuccess(response) {
+			console.log(reponse)
+		}
 	},
 	computed: {
 		value: function() {
@@ -69,6 +88,9 @@ export default {
 		},
 		valueIsUrl: function() {
 			return Utils.isUrl(this.value)
+		},
+		valueIsLiteral: function() {
+			return this.parseLiteral(this.value)
 		},
 		valueIsValid: function() {
 			if (this.datatype === 'uri') {
