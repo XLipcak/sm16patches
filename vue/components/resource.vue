@@ -249,19 +249,9 @@ export default {
 			var patchJson = Object()
 			patchJson.resourceUrl = this.url
 
-			patchJson.addedData = [].concat(
-				this.$refs.dataGridSubject.addedData,
-				_.map(this.$refs.dataGridSubject.updatedData, d => d.to),
-				this.$refs.dataGridObject.addedData,
-				_.map(this.$refs.dataGridObject.updatedData, d => d.to)
-			)
-
-			patchJson.deletedData = [].concat(
-				this.$refs.dataGridSubject.deletedData,
-				_.map(this.$refs.dataGridSubject.updatedData, d => d.from),
-				this.$refs.dataGridObject.deletedData,
-				_.map(this.$refs.dataGridObject.updatedData, d => d.from)
-			)
+			patchJson.addedData = this.$refs.dataGridSubject.addedData.concat(this.$refs.dataGridObject.addedData);
+			patchJson.deletedData = this.$refs.dataGridSubject.deletedData.concat(this.$refs.dataGridObject.deletedData);
+			patchJson.updatedData = this.$refs.dataGridSubject.updatedData.concat(this.$refs.dataGridObject.updatedData);
 
 			$.post("/patch_requests", JSON.stringify(patchJson))
 		}
