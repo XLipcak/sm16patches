@@ -23,34 +23,6 @@
 
 
 
-<!-- ORIGINAL TABLE TEMPLATE -->
-<!--
-	<table class="table">
-		<tbody>
-			{% for subject, predicate, object in rdfGraph.triples( (URIRef(url), None, None) ) %}
-				<tr>
-					<td class="first"><a href="{{ predicate }}">{{ predicate }}</a></td>
-					{% if isinstance(object, URIRef) %}
-						<td class="second">
-							<p class="break">
-								<a href="{{object}}">{{ object }}</a>
-							</p>
-						</td>
-					{% else %}
-						<td class="second">
-							<p class="break">
-								{{ object }}
-							</p>
-						</td>
-					{% end %}
-				</tr>
-			{% end %}						
-		</tbody>
-	</table>
--->
-
-
-
 <script>
 import Vue from 'vue'
 import Utils from './../utils.js'
