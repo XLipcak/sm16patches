@@ -178,6 +178,8 @@ export default {
 				triples: _.filter(triples, triple => _.isEqual(triple.subject, this.url)),
 				mapping: {
 					columns: ['predicate', 'object'],
+
+					// Creates data object instance from row
 					create (row) {
 						return new RdfTriple.create(
 							url,
@@ -188,14 +190,18 @@ export default {
 							}
 						) 
 					},
+
+					// Creates row instance from data object 
 					read (data) {
 						return {
 							subject: data.subject,
 							predicate: data.predicate, 
 							object: data.object,
-							objectDatatype: data.objectDatatype,
+							objectDatatype: data.objectDatatype
 						}
 					},
+
+					// Updates existing data instance with data from row
 					update (data, updatedRow) {
 						data.subject = updatedRow.subject
 						data.predicate = updatedRow.predicate
@@ -210,6 +216,8 @@ export default {
 				triples: _.filter(triples, triple => _.isEqual(triple.object, this.url)),
 				mapping: {
 					columns: ['predicate', 'subject'],
+
+					// Creates data object instance from row
 					create (row) {
 						return new RdfTriple.create(
 								row.subject,
@@ -220,14 +228,18 @@ export default {
 								}
 						)
 					},
+
+					// Creates row instance from data object 
 					read (data) {
 						return {
 							subject: data.subject,
 							predicate: data.predicate, 
 							object: data.object,
-							objectDatatype: data.objectDatatype,
+							objectDatatype: data.objectDatatype
 						}
 					},
+
+					// Updates existing data instance with data from row
 					update (data, updatedRow) {
 						data.subject = updatedRow.subject
 						data.predicate = updatedRow.predicate

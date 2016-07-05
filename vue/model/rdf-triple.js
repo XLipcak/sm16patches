@@ -7,16 +7,16 @@ export default {
 			subject: subject,
 			predicate: predicate,
 			object: object.value,
-			objectDatatype: object.type,
+			objectDatatype: object.type
 		}
 	},
 
 	/**
 	 * Construct flat array of triples from JSON object of following structure:
 	 *    subject: { predicate: { object: {type: <string>, value: <string>} }
-     * 
-     * @param Object jsonObject 
-     * @return Array
+	 * 
+	 * @param Object jsonObject 
+	 * @return Array
 	 */
 	arrayOfTriplesFromJson (jsonObject) {
 		var _tripleConsturctor = this.create; // TODO: Clean up

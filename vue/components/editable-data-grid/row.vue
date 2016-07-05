@@ -12,7 +12,8 @@
 <tr>
 
 <tr v-if="template == 'subject'">
-	<td>
+	<td>{{ row.subject }}</td>
+	<td calss="first">
 		<editable-cell
 			:editable-mode="editableMode"
 			:row="row"
@@ -21,7 +22,7 @@
 			:uuid="uuid + 'predicate'"
 		></editable-cell>
 	</td>
-	<td>
+	<td calss="second">
 		<editable-cell
 			:editable-mode="editableMode"
 			:row="row"
@@ -34,15 +35,6 @@
 
 <tr v-if="template == 'object'">
 	<td class="first">
-		is <editable-cell
-			:editable-mode="editableMode"
-			:row="row"
-			column="predicate"
-			:datatype="'uri'"
-			:uuid="uuid + 'predicate'"
-		></editable-cell> of 
-	</td>	
-	<td class="second">
 		<editable-cell
 			:editable-mode="editableMode"
 			:row="row"
@@ -50,6 +42,16 @@
 			:datatype="row.objectDatatype"
 		></editable-cell>
 	</td>
+	<td class="second">
+		<editable-cell
+			:editable-mode="editableMode"
+			:row="row"
+			column="predicate"
+			:datatype="'uri'"
+			:uuid="uuid + 'predicate'"
+		></editable-cell>
+	</td>	
+	<td>{{ row.object }}</td>
 	<td><button class="btn btn-danger glyphicon glyphicon-remove" v-show="editableMode" @click="removeRow(uuid)"></button></td>
 </tr>
 </template>
