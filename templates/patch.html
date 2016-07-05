@@ -8,24 +8,34 @@
 		{% for key, value in patchRequestJson.iteritems() %}
 		<p><b>Patches, where  <a href=""> {{key}} </a>  is a subject: </b></p>
 			<table class="table">
-				{% for triplesList in value['deletedData'] %}
-					{% for triple in triplesList %}
-						<tr id="delete">
-							<td>{{ triple['subject'].encode('utf-8') }}</td>
-							<td>{{ triple['predicate'].encode('utf-8') }}</td>
-							<td>{{ triple['object'].encode('utf-8') }}</td>
-							<td>{{ value['timestamp'].encode('utf-8') }}</td>
-						</tr>
+				<tr>
+    				<th>Subject</th>
+					<th>Predicate</th>
+    				<th>Object</th>
+					<th>Time</th>
+  				</tr>
+				{% for key2, timeStampData in value.iteritems() %}
+					{% for triplesList in timeStampData['deletedData'] %}
+						{% for triple in triplesList %}
+							<tr id="delete">
+								<td>{{ triple['subject'].encode('utf-8') }}</td>
+								<td>{{ triple['predicate'].encode('utf-8') }}</td>
+								<td>{{ triple['object'].encode('utf-8') }}</td>
+								<td>{{ key2.encode('utf-8') }}</td>
+							</tr>
+						{% end %}
 					{% end %}
 				{% end %}
-				{% for triplesList in value['addedData'] %}
-					{% for triple in triplesList %}
-						<tr id="add">
-							<td>{{ triple['subject'].encode('utf-8') }}</td>
-							<td>{{ triple['predicate'].encode('utf-8') }}</td>
-							<td>{{ triple['object'].encode('utf-8') }}</td>
-							<td>{{ value['timestamp'].encode('utf-8') }}</td>
-						</tr>
+				{% for key2, timeStampData in value.iteritems() %}
+					{% for triplesList in timeStampData['addedData'] %}
+						{% for triple in triplesList %}
+							<tr id="add">
+								<td>{{ triple['subject'].encode('utf-8') }}</td>
+								<td>{{ triple['predicate'].encode('utf-8') }}</td>
+								<td>{{ triple['object'].encode('utf-8') }}</td>
+								<td>{{ key2.encode('utf-8') }}</td>
+							</tr>
+						{% end %}
 					{% end %}
 				{% end %}
 			</table>

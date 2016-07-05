@@ -61,14 +61,18 @@ class PatchRequestPersistence:
                         with open(os.path.join(root, file), "r") as data_file:
                             data = json.load(data_file)
                             id = data['resourceUrl']
+                            time = data['timestamp']
                             if id not in patchRequests:
                                 patchRequests[str(id)] = {}
-                                patchRequests[str(id)]['deletedData'] = []
-                                patchRequests[str(id)]['addedData'] = []
+                            if time not in patchRequests[str(id)]:
+                                patchRequests[str(id)][time] = {}
+                                patchRequests[str(id)][time] = {}
+                                patchRequests[str(id)][time]['deletedData'] = []
+                                patchRequests[str(id)][time]['addedData'] = []
 
-                            patchRequests[str(id)]['deletedData'].append(data['deletedData'])
-                            patchRequests[str(id)]['addedData'].append(data['addedData'])
-                            patchRequests[str(id)]['timestamp'] = data['timestamp']
+                            patchRequests[str(id)][time]['deletedData'].append(data['deletedData'])
+                            patchRequests[str(id)][time]['addedData'].append(data['addedData'])
+
             return patchRequests
 
         # patchRequestUrl specified => LOAD all patch requests where it appears as subject or object
