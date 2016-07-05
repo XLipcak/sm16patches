@@ -7,25 +7,34 @@
 		<input v-model="searchString" id="searchText" name="searchText" placeholder="Search..." value="{{searchText}}" class="form-control" type="text" />
 	</div>
 
-	<h3>Triples where <a href= "{{ url }}"> {{ url }} </a> is the subject:</h3>
-	<editable-data-grid
-		v-ref:data-grid-subject
-		row-template="subject"
-		:data="urlAsSubject.triples"
-		:mapping="urlAsSubject.mapping"
-		:filter-string="searchString"
-		:editable-mode="isEditableMode"
-	></editable-data-grid>
+	<ul class="nav nav-tabs">
+		<li class="active"><a data-toggle="tab" href="#resource-as-subject">Resource as subject</a></li>
+		<li><a data-toggle="tab" href="#resource-as-object">Resource as object</a></li>
+	</ul>
 
-	<h3>Triples where <a href= "{{url}}"> {{ url }} </a> is the object:</h3>
-	<editable-data-grid
-		v-ref:data-grid-object
-		row-template="object"
-		:data="urlAsObject.triples"
-		:mapping="urlAsObject.mapping"
-		:filter-string="searchString"
-		:editable-mode="isEditableMode"
-	></editable-data-grid>
+	<div class="tab-content">
+		<div id="resource-as-subject" class="tab-pane active">
+			<editable-data-grid
+				v-ref:data-grid-subject
+				row-template="subject"
+				:data="urlAsSubject.triples"
+				:mapping="urlAsSubject.mapping"
+				:filter-string="searchString"
+				:editable-mode="isEditableMode"
+			></editable-data-grid>
+		</div>
+
+		<div id="resource-as-object" class="tab-pane">
+			<editable-data-grid
+				v-ref:data-grid-object
+				row-template="object"
+				:data="urlAsObject.triples"
+				:mapping="urlAsObject.mapping"
+				:filter-string="searchString"
+				:editable-mode="isEditableMode"
+			></editable-data-grid>
+		</div>
+	</div>	
 
 	<h3>Blank nodes</h3>
 	<em>To be done.</em>
