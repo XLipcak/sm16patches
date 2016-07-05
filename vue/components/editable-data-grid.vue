@@ -8,7 +8,13 @@
 			</tr>
 		</thead>
 		<tbody>
-			<tr is="editable-data-grid-add" v-if="editableMode" :columns="mapping.columns"></tr><!-- orderBy 'metaData.isNew' -->
+			<tr
+				v-if="editableMode"
+				is="editable-data-grid-add"
+				:columns="mapping.columns"
+				:empty-columns-left="mapping.columns.indexOf('subject') == -1 ? 1 : 0"
+				:empty-columns-right="mapping.columns.indexOf('object') == -1 ? 1 : 0"
+			></tr>
 			<tr v-for="(uuid, row) in rows | filterBy filterString | orderBy defaultOrder" 
 				is="editable-data-grid-row"
 				:columns="mapping.columns"

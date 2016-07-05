@@ -137,7 +137,7 @@ export default {
 			urlAsObject: {
 				triples: _.filter(triples, triple => _.isEqual(triple.object, this.url)),
 				mapping: {
-					columns: ['predicate', 'subject'],
+					columns: ['subject', 'predicate'],
 
 					// Creates data object instance from row
 					create (row) {

@@ -1,6 +1,12 @@
 <template>
-<td v-for="(column, value) in newRow"><input class="editable-mode form-control" v-model="value" placeholder="{{ column }}" /></td>
-<td><button class="btn btn-success glyphicon glyphicon-plus" @click="addRow()"></button></td>
+<td v-for="value in rangeEmptyColumnsLeft"></td>
+<td v-for="(column, value) in newRow">
+	<input class="editable-mode form-control" v-model="value" placeholder="{{ column }}" />
+</td>
+<td v-for="value in rangeEmptyColumnsRight"></td>
+<td>
+	<button class="btn btn-success glyphicon glyphicon-plus" @click="addRow()"></button>
+</td>
 </template>
 
 
@@ -8,11 +14,15 @@
 <script>
 export default {
 	props: {
-		columns: Array
+		columns: Array,
+		emptyColumnsLeft: Number,
+		emptyColumnsRight: Number,
 	},
 	data() {
 		return {
-			newRow: this.emptyRow()
+			newRow: this.emptyRow(),
+			rangeEmptyColumnsLeft: _.range(this.emptyColumnsLeft),
+			rangeEmptyColumnsRight: _.range(this.emptyColumnsRight) 
 		}
 	},
 	methods: {
