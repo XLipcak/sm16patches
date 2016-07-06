@@ -30,7 +30,7 @@ def storeGraphAsNTriples(graph, url):
 
     ## do regex matching in case of https
     ## the server doesn't seem to support https at the moment
-    url = url[7:].replace("/", "")
+    url = url[7:].replace("/", "").replace(":", "_")
 
     baseDirectory = "resource_cache"
 
@@ -50,7 +50,7 @@ def storeGraphAsNTriples(graph, url):
     return filename
 
 def loadNTriplesFromFile(url):
-    url = url[7:].replace("/", "")
+    url = url[7:].replace("/", "").replace(":", "_")
     path = "resource_cache/" + url
 
     currentDate = str(datetime.now())[:-7]
