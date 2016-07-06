@@ -41,12 +41,10 @@
 
 	<div class="footer navbar-fixed-bottom">
 		<div class="panel panel-default panel-bottom">
-			<div class="panel-body">
-				<button type="button" class="btn btn-default" @click="toggleEditableMode">Editable mode: {{ isEditableMode }}</button>
-				<button type="button" class="btn btn-default" data-toggle="modal" data-target="#patchModal">
+			<div class="panel-body text-center">
+				<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#patchModal">
 					View changes
 				</button>
-				<button id="submitPatch" type="button" class="btn btn-primary" v-on:click="postPatchRequest">Submit Patch Request</button>
 			</div>
 		</div>	
 	</div>
@@ -74,7 +72,13 @@
 					<h5>Updated</h5>
 					<pre>{{ $refs.dataGridObject.updatedData | json }}</pre>
 					<h5>Deleted</h5>
-					<pre>{{ $refs.dataGridObject.deletedData | json }}</pre>				</div>
+					<pre>{{ $refs.dataGridObject.deletedData | json }}</pre>				
+				</div>
+				<div class="modal-footer">
+					<div class="text-center">
+						<button id="submitPatch" type="button" class="btn btn-primary" v-on:click="postPatchRequest">Submit Patch Request</button>
+					</div>
+				</div>
 			</div>
 		</div>
 	</div>				
