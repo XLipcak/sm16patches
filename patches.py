@@ -75,40 +75,52 @@ class PatchRequestPersistence:
 
             return patchRequests
 
-        # patchRequestUrl specified => LOAD all patch requests where it appears as subject or object
+        # patchRequestUrl specified => LOAD all patch requests where it appears as subject
         path = self.getSubjectPath(patchRequestUrl)
-        for filename in os.listdir(path):
-            print('Reading from file: ' + filename)
+        try:
+            for filename in os.listdir(path):
+                print('Reading from file: ' + filename)
 
-            with open(path + '/' + filename) as data_file:
-                data = json.load(data_file)
-                id = data['resourceUrl']
-                if id not in patchRequests:
-                    patchRequests[str(id)] = {}
-                    patchRequests[str(id)]['deletedData'] = []
-                    patchRequests[str(id)]['addedData'] = []
+                with open(path + '/' + filename) as data_file:
+                    data = json.load(data_file)
+                    id = data['resourceUrl']
+                    time = data['timestamp']
+                    if id not in patchRequests:
+                        patchRequests[str(id)] = {}
+                    if time not in patchRequests[str(id)]:
+                        patchRequests[str(id)][time] = {}
+                        patchRequests[str(id)][time] = {}
+                        patchRequests[str(id)][time]['deletedData'] = []
+                        patchRequests[str(id)][time]['addedData'] = []
 
-                patchRequests[str(id)]['deletedData'].append(data['deletedData'])
-                patchRequests[str(id)]['addedData'].append(data['addedData'])
-                patchRequests[str(id)]['timestamp'] = data['timestamp']
-
-        path = self.getObjectPath(patchRequestUrl)
-        for filename in os.listdir(path):
-            print('Reading from file: ' + filename)
-
-            with open(path + '/' + filename) as data_file:
-                data = json.load(data_file)
-                id = data['resourceUrl']
-                if id not in patchRequests:
-                    patchRequests[str(id)] = {}
-                    patchRequests[str(id)]['deletedData'] = []
-                    patchRequests[str(id)]['addedData'] = []
-
-                patchRequests[str(id)]['deletedData'].append(data['deletedData'])
-                patchRequests[str(id)]['addedData'].append(data['addedData'])
-                patchRequests[str(id)]['timestamp'] = data['timestamp']
+                    patchRequests[str(id)][time]['deletedData'].append(data['deletedData'])
+                    patchRequests[str(id)][time]['addedData'].append(data['addedData'])
+        except OSError:
+            pass
 
         return patchRequests
+
+    def loadPatchesForTriple(self, subject, predicate, object):
+        patchRequests = self.load(subject)
+
+        resultPatchRequests = {}
+        resultPatchRequests['addedData'] = []
+        resultPatchRequests['deletedData'] = []
+        if subject in patchRequests:
+            for subject, subjectDict in patchRequests.iteritems():
+                for timestamp, patches in subjectDict.iteritems():
+                    for addedPatches in patches['addedData']:
+                        for patch in addedPatches:
+                            if 'predicate' in patch and patch['predicate'] == predicate:
+                                patch['timestamp'] = timestamp
+                                resultPatchRequests['addedData'].append(patch)
+
+                    for deletedPatches in patches['deletedData']:
+                        for patch in deletedPatches:
+                            if 'predicate' in patch and patch['predicate'] == predicate and patch['object'] == object:
+                                resultPatchRequests['deletedData'].append(timestamp)
+
+        return resultPatchRequests
 
     def generatePatchRequestJsonGroupedByURI(self, changeRequestJson):
         subject =  changeRequestJson["resourceUrl"]

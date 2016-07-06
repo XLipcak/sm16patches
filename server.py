@@ -92,6 +92,7 @@ class ResourceHandler(tornado.web.RequestHandler):
             graph.parse(filename, format="nt")
 
         jsonData = buildNaiveJsonFromGraph(graph, url, filename)
+        jsonData = json.dumps(self.processPatchesToJson(jsonData))
 
         if not searchText:
             self.render("templates/resource.html", jsonData=jsonData, rdfGraph=graph, url=url, searchText='')
@@ -109,6 +110,17 @@ class ResourceHandler(tornado.web.RequestHandler):
                 filteredGraph.add((s, p, o))
 
         return filteredGraph
+
+    def processPatchesToJson(self, jsonData):
+        data = tornado.escape.json_decode(jsonData)
+        patchRequestPersistence = PatchRequestPersistence('patch_request_storage')
+
+        for subject, subjectValue in data['data'].iteritems():
+            for predicate, predicateValue in subjectValue.iteritems():
+                for index, object in enumerate(predicateValue):
+                    patchesForTriple = patchRequestPersistence.loadPatchesForTriple(subject, predicate, object['value'])
+                    data['data'][subject][predicate][index]['patches'] = patchesForTriple
+        return data
 
 class PatchListHandler(tornado.web.RequestHandler):
     def get(self):
