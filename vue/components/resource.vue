@@ -51,7 +51,7 @@
 
 	<!-- Recorded chagnes Modal -->
 	<div class="modal fade" id="patchModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-		<div class="modal-dialog" role="document">
+		<div class="modal-dialog modal-recorded-changes" role="document">
 			<div class="modal-content">
 				<div class="modal-header">
 					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
@@ -59,20 +59,64 @@
 				</div>
 				<div class="modal-body">
 					<h4>Triples where <a href="{{ url }}"> {{ url }} </a> is the subject:</h4>
-					<h5>Added</h5>
-					<pre>{{ $refs.dataGridSubject.addedData | json }}</pre>
-					<h5>Updated</h5>
-					<pre>{{ $refs.dataGridSubject.updatedData | json }}</pre>
-					<h5>Deleted</h5>
-					<pre>{{ $refs.dataGridSubject.deletedData | json }}</pre>
+					<table class="table recorded-changes">
+						<tr>
+							<th>Subject</th>
+							<th>Predicate</th>
+							<th>Object</th>
+						</tr>
+
+						<!-- Added -->
+						<tr class="added" v-for="triple in $refs.dataGridSubject.addedData">
+							<td>{{ triple.subject }}</td>
+							<td>{{ triple.predicate }}</td>
+							<td>{{ triple.object }}</td>
+						</tr>
+
+						<!-- Updated -->
+						<tr class="updated" v-for="triple in $refs.dataGridSubject.updatedData">
+							<td>{{ triple.to.subject }}</td>
+							<td>{{ triple.to.predicate }}</td>
+							<td>{{ triple.to.object }}</td>
+						</tr>
+
+						<!-- Deleted -->
+						<tr class="deleted" v-for="triple in $refs.dataGridSubject.deletedData">
+							<td>{{ triple.subject }}</td>
+							<td>{{ triple.predicate }}</td>
+							<td>{{ triple.object }}</td>
+						</tr>
+					</table>
 
 					<h4>Triples where <a href="{{ url }}"> {{ url }} </a> is the object:</h4>
-					<h5>Added</h5>
-					<pre>{{ $refs.dataGridObject.addedData | json }}</pre>
-					<h5>Updated</h5>
-					<pre>{{ $refs.dataGridObject.updatedData | json }}</pre>
-					<h5>Deleted</h5>
-					<pre>{{ $refs.dataGridObject.deletedData | json }}</pre>				
+					<table class="table recorded-changes">
+						<tr>
+							<th>Subject</th>
+							<th>Predicate</th>
+							<th>Object</th>
+						</tr>
+
+						<!-- Added -->
+						<tr class="added" v-for="triple in $refs.dataGridObject.addedData">
+							<td>{{ triple.subject }}</td>
+							<td>{{ triple.predicate }}</td>
+							<td>{{ triple.object }}</td>
+						</tr>
+
+						<!-- Updated -->
+						<tr class="updated" v-for="triple in $refs.dataGridObject.updatedData">
+							<td>{{ triple.to.subject }}</td>
+							<td>{{ triple.to.predicate }}</td>
+							<td>{{ triple.to.object }}</td>
+						</tr>
+
+						<!-- Deleted -->
+						<tr class="deleted" v-for="triple in $refs.dataGridObject.deletedData">
+							<td>{{ triple.subject }}</td>
+							<td>{{ triple.predicate }}</td>
+							<td>{{ triple.object }}</td>
+						</tr>
+					</table>
 				</div>
 				<div class="modal-footer">
 					<div class="text-center">

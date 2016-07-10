@@ -111,3 +111,26 @@ table.editable-datagrid>tbody>tr>td {
 table.editable-datagrid>tbody>tr>td input {
     margin: 0;
 }
+
+/*
+ * Recorded Changes modal
+ */
+.modal-recorded-changes {
+    width: 100%;
+}
+
+table.recorded-changes tr td {
+    padding: 1px 5px;
+}
+
+table.recorded-changes tr.added td {
+    color: green;
+}
+
+table.recorded-changes tr.updated td {
+    color: blue;
+}
+
+table.recorded-changes tr.deleted td {
+    color: red;
+}
