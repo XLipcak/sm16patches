@@ -177,9 +177,6 @@ export default {
 			// Rest sort by UUID
 			if (a.$key == b.$key) return 0
 			return a.$key > b.$key ? 1 : -1
-
-			//if (a.$value.predicate == b.$value.predicate) return 0
-			//return a.$value.predicate > b.$value.predicate ? 1 : -1
 		}
 	}
 }

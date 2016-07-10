@@ -32,5 +32,39 @@ export default {
 		} else {
 			return false;
 		}
+	},
+
+	/**
+	 * Performs autocomplete of RDF URL's
+	 */
+	autocomplete (column, uuid) {
+		if (column !== "predicate") return null;
+
+		var searchString = $("#" + uuid + "input").val()
+		searchString = searchString.split("/").slice(-1)[0]
+
+		if (searchString === "") {
+			return null;
+		}
+
+		let apiUrl = "http://lov.okfn.org/dataset/lov/api/v2/term/search?q=" + searchString + "&type=property&page_size=100"
+		let inputId = uuid + 'input'
+		let autocompleteSource = []
+
+		let xhr = new XMLHttpRequest()
+		xhr.onreadystatechange = function() {
+			if (xhr.readyState == XMLHttpRequest.DONE) {
+				let response = JSON.parse(xhr.response)
+				response.results.forEach( function(entry) {
+					autocompleteSource.push(entry.uri[0])
+				})
+				$("#"+inputId).autocomplete({
+					source: autocompleteSource,
+				})
+			}
+		}
+
+		xhr.open('GET', apiUrl)
+		xhr.send()
 	}
 }

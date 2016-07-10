@@ -1,7 +1,13 @@
 <template>
 <td v-for="value in rangeEmptyColumnsLeft"></td>
 <td v-for="(column, value) in newRow">
-	<input class="editable-mode form-control" v-model="value" placeholder="{{ column }}" />
+	<input
+		class="editable-mode form-control"
+		v-model="value"
+		placeholder="{{ column }}"
+		:id="this.uuid + 'input'"
+		v-on:keyup="autocomplete(column, uuid)"
+	/>
 </td>
 <td v-for="value in rangeEmptyColumnsRight"></td>
 <td>
@@ -12,6 +18,8 @@
 
 
 <script>
+import Utils from './../../utils.js'
+
 export default {
 	props: {
 		columns: Array,
@@ -22,7 +30,8 @@ export default {
 		return {
 			newRow: this.emptyRow(),
 			rangeEmptyColumnsLeft: _.range(this.emptyColumnsLeft),
-			rangeEmptyColumnsRight: _.range(this.emptyColumnsRight) 
+			rangeEmptyColumnsRight: _.range(this.emptyColumnsRight),
+			uuid: Utils.uuid()
 		}
 	},
 	methods: {
@@ -33,6 +42,9 @@ export default {
 			// TODO: validate new entry, eg.: if (_.some(this.newEntry, function (value) { return !_.isEmpty(value.trim()) })) { ...
 			this.$dispatch('addRow', this.newRow)
 			this.newRow = this.emptyRow()
+		},
+		autocomplete (column, uuid) {
+			return Utils.autocomplete(column, uuid)
 		}
 	}
 }

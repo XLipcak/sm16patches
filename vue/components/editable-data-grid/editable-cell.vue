@@ -6,7 +6,7 @@
 			:class="validationCssClass"
 			v-if="editableMode" placeholder="{{ column }}"
 			v-model="value"	
-			v-on:keyup="autocomplete"
+			v-on:keyup="autocomplete(column, uuid)"
 	/>
 	<template v-else>
 		<a v-show="isUrl(value)" href="{{ value }}">{{ value }}</a>
@@ -41,36 +41,9 @@ export default {
 
 			return match
 		},
-		autocomplete () {
-			if (this.column !== "predicate") return null;
-
-			var searchString = $("#" + this.uuid + "input").val()
-			searchString = searchString.split("/").slice(-1)[0]
-
-			if (searchString === "") {
-				return null;
-			}
-
-			let apiUrl = "http://lov.okfn.org/dataset/lov/api/v2/term/search?q=" + searchString + "&type=property&page_size=100"
-			let inputId = this.uuid + 'input'
-			let autocompleteSource = []
-
-			let xhr = new XMLHttpRequest()
-			xhr.onreadystatechange = function() {
-				if (xhr.readyState == XMLHttpRequest.DONE) {
-					let response = JSON.parse(xhr.response)
-					response.results.forEach( function(entry) {
-						autocompleteSource.push(entry.uri[0])
-					})
-					$("#"+inputId).autocomplete({
-						source: autocompleteSource,
-					})
-				}
-			}
-
-			xhr.open('GET', apiUrl)
-			xhr.send()
-		},
+		autocomplete (column, uuid) {
+			return Utils.autocomplete(column, uuid)
+		}
 	},
 	computed: {
 		isValueUpdated: function() {
