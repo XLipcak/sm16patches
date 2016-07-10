@@ -2,14 +2,15 @@
 	<input
 			id="{{uuid + 'input'}}"
 			type="text"
-			class="editable-mode form-control {{cssClass}}"
+			class="editable-mode form-control"
+			:class="validationCssClass"
 			v-if="editableMode" placeholder="{{ column }}"
-			v-model="row[column]"
+			v-model="value"	
 			v-on:keyup="autocomplete"
 	/>
 	<template v-else>
-		<a v-show="isUrl(row[column])" href="row[column]">{{ row[column] }}</a>
-		<span v-show="!isUrl(row[column])">{{ row[column] }}</span>
+		<a v-show="isUrl(value)" href="{{ value }}">{{ value }}</a>
+		<span v-show="!isUrl(value)">{{ value }}</span>
 	</template>
 </template>
 
@@ -18,7 +19,8 @@ import Utils from './../../utils.js'
 
 export default {
 	props: {
-		row: Object,
+		value: String,
+		originalValue: String,		
 		column: String,
 		datatype: String,
 		uuid: String,
@@ -71,8 +73,8 @@ export default {
 		},
 	},
 	computed: {
-		value: function() {
-			return this.row[this.column]
+		isValueUpdated: function() {
+			return this.value != this.originalValue
 		},
 		valueIsUrl: function() {
 			return Utils.isUrl(this.value)
@@ -91,7 +93,11 @@ export default {
 			}
 			return false
 		},
-		cssClass: function() {
+		validationCssClass: function() {
+			if (!this.isValueUpdated) {
+				return ''
+			}
+
 			if (this.datatype === 'uri') {
 				if (this.valueIsUrl) {
 					return 'valid'
@@ -106,5 +112,10 @@ export default {
 			return 'invalid'
 		},
 	},
+	watch: {
+		value (updatedValue) {
+			this.$dispatch('updatedValue', this.column, updatedValue)
+		}
+	}
 }
 </script>

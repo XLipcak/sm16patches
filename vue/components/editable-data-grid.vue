@@ -20,6 +20,7 @@
 				:columns="mapping.columns"
 				:uuid="uuid"
 				:row="row"
+				:original-row="originalRows[uuid]"
 				:template="rowTemplate"
 				:editable-mode="editableMode"
 			></tr>
@@ -62,10 +63,12 @@ export default {
 		}
 	},
 	data: function () {
+		var originalData = _.deepClone(this.data)
+
 		return {
-			rows: this.computeRows(),
-			originalData: _.deepClone(this.data),
-			columns: this.columns
+			columns: this.columns,
+			originalData:  originalData,
+			originalRows: this.computeRows(originalData)
 		}
 	},
 	events: {
@@ -81,6 +84,9 @@ export default {
 		},    
 	},  
 	computed: {
+		rows() {
+			return this.computeRows(this.data)
+		},
 		// Returns list of added data instances
 		addedData() {
 			return _.filter(
@@ -134,8 +140,8 @@ export default {
 	},
 	methods: {
 		// creates list of rows from list of data objects
-		computeRows () {
-			return _.mapObject(this.data, entry => this.mapping.read(entry), { mapping: this.mapping })
+		computeRows (data) {
+			return _.mapObject(data, entry => this.mapping.read(entry), { data: data, mapping: this.mapping })
 		},
 
 		// Provides ordering by 'metadata.isNew' DESC (new rows are always on top) and then 'predicate' ASC (a -> z)

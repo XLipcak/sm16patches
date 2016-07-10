@@ -1,10 +1,12 @@
 <template>
+<!-- Defualt template: renders all fields as editable. -->
 <tr v-if="template == 'default'">
 	<td v-for="column in columns">
 		<editable-cell
 			:editable-mode="editableMode"
-			:row="row"
 			:column="column"
+			:value="row[column]"
+			:original-value="originalRow[column]"
 			:datatype="row.objectDatatype"
 		></editable-cell>
 	</td>
@@ -13,13 +15,15 @@
 	</td>
 <tr>
 
+<!-- Renders 'subject' field as non-editable and 'predicate' and 'object' fields as editable. All other fields are skipped. -->
 <tr v-if="template == 'subject'">
 	<td>{{ row.subject }}</td>
 	<td>
 		<editable-cell
 			:editable-mode="editableMode"
-			:row="row"
 			column="predicate"
+			:value="row['predicate']"
+			:original-value="originalRow['predicate']"
 			:datatype="'uri'"
 			:uuid="uuid + 'predicate'"
 		></editable-cell>
@@ -27,8 +31,9 @@
 	<td>
 		<editable-cell
 			:editable-mode="editableMode"
-			:row="row"
 			column="object"
+			:value="row['object']"
+			:original-value="originalRow['object']"
 			:datatype="row.objectDatatype"
 		></editable-cell>
 	</td>
@@ -37,20 +42,23 @@
 	</td>
 </tr>
 
+<!-- Renders 'object' field as non-editable and 'subject' and 'predicate' fields as editable. All other fields are skipped. -->
 <tr v-if="template == 'object'">
 	<td>
 		<editable-cell
 			:editable-mode="editableMode"
-			:row="row"
 			column="subject"
+			:value="row['subject']"
+			:original-value="originalRow['subject']"
 			:datatype="row.objectDatatype"
 		></editable-cell>
 	</td>
 	<td>
 		<editable-cell
 			:editable-mode="editableMode"
-			:row="row"
 			column="predicate"
+			:value="row['predicate']"
+			:original-value="originalRow['predicate']"
 			:datatype="'uri'"
 			:uuid="uuid + 'predicate'"
 		></editable-cell>
@@ -74,6 +82,7 @@ export default {
 		columns: Array,
 		uuid: String,
 		row: Object,
+		originalRow: Object,
 		editableMode: {
 			type: Boolean,
 			default: true,
@@ -88,12 +97,10 @@ export default {
 	components: {
 		'editable-cell': EditableCell 
 	},
-	watch: {
-		row: {
-			handler: function (updatedRow) {
-				this.$dispatch('updateRow', this.uuid, updatedRow)
-			},
-			deep: true
+	events: {
+		updatedValue(column, updatedValue) {
+			this.row[column] = updatedValue // Isn't this little hacky?
+			this.$dispatch('updateRow', this.uuid, this.row)
 		}
 	},
 	methods: {
