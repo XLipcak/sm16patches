@@ -1,5 +1,5 @@
 <template>
-	<table class="table">
+	<table class="table editable-datagrid">
 		<thead>
 			<tr>
 				<th>Subject</th>
@@ -35,6 +35,8 @@ import Utils from './../utils.js'
 import Row from './editable-data-grid/row.vue'
 import Add from './editable-data-grid/add.vue'
 
+var newRowsCounter = 0
+
 export default {
 	components: {
 		'editable-data-grid-row': Row,
@@ -68,7 +70,8 @@ export default {
 	},
 	events: {
 		addRow (newRow) {
-			Vue.set(this.data, 'new-' + Utils.uuid(), this.mapping.create(newRow))
+			Vue.set(this.data, 'new-' + newRowsCounter + '-' + Utils.uuid(), this.mapping.create(newRow))
+			newRowsCounter += 1
 		},
 		updateRow (uuid, updatedRow) {
 			Vue.set(this.data, uuid, this.mapping.update(this.data[uuid], updatedRow)) 	
@@ -140,10 +143,17 @@ export default {
 			// New rows to the front
 			if (a.$key.startsWith("new-") && !b.$key.startsWith("new-")) return -1
 			if (!a.$key.startsWith("new-") && b.$key.startsWith("new-")) return 1
+			if (a.$key.startsWith("new-") && b.$key.startsWith("new-")) {
+				if (parseInt(a.$key.split('-')[1]) > parseInt(b.$key.split('-')[1])) return -1
+				return 1
+			}
 
-			// Rest alphabetically by predicate
-			if (a.$value.predicate == b.$value.predicate) return 0
-			return a.$value.predicate > b.$value.predicate ? 1 : -1
+			// Rest sort by UUID
+			if (a.$key == b.$key) return 0
+			return a.$key > b.$key ? 1 : -1
+
+			//if (a.$value.predicate == b.$value.predicate) return 0
+			//return a.$value.predicate > b.$value.predicate ? 1 : -1
 		}
 	}
 }

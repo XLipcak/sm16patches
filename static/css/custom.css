@@ -96,3 +96,18 @@ tr#delete{
 tr#add{
     color:green;
 }
+
+/* 
+ * Editable Datagrid
+ */
+table.editable-datagrid {
+    width: 100%;
+}
+
+table.editable-datagrid>tbody>tr>td {
+    padding: 0;
+}
+
+table.editable-datagrid>tbody>tr>td input {
+    margin: 0;
+}

@@ -8,12 +8,14 @@
 			:datatype="row.objectDatatype"
 		></editable-cell>
 	</td>
-	<td><button class="btn btn-danger glyphicon glyphicon-remove" v-show="editableMode" @click="removeRow(uuid)"></button></td>
+	<td>
+		<button class="btn btn-danger glyphicon glyphicon-remove" v-show="editableMode" @click="removeRow(uuid)"></button>
+	</td>
 <tr>
 
 <tr v-if="template == 'subject'">
 	<td>{{ row.subject }}</td>
-	<td calss="first">
+	<td>
 		<editable-cell
 			:editable-mode="editableMode"
 			:row="row"
@@ -22,7 +24,7 @@
 			:uuid="uuid + 'predicate'"
 		></editable-cell>
 	</td>
-	<td calss="second">
+	<td>
 		<editable-cell
 			:editable-mode="editableMode"
 			:row="row"
@@ -30,11 +32,13 @@
 			:datatype="row.objectDatatype"
 		></editable-cell>
 	</td>
-	<td><button class="btn btn-danger glyphicon glyphicon-remove" v-show="editableMode" @click="removeRow(uuid)"></button></td>
+	<td>
+		<button class="btn btn-danger glyphicon glyphicon-remove" v-show="editableMode" @click="removeRow(uuid)"></button>
+	</td>
 </tr>
 
 <tr v-if="template == 'object'">
-	<td class="first">
+	<td>
 		<editable-cell
 			:editable-mode="editableMode"
 			:row="row"
@@ -42,7 +46,7 @@
 			:datatype="row.objectDatatype"
 		></editable-cell>
 	</td>
-	<td class="second">
+	<td>
 		<editable-cell
 			:editable-mode="editableMode"
 			:row="row"
@@ -51,8 +55,12 @@
 			:uuid="uuid + 'predicate'"
 		></editable-cell>
 	</td>	
-	<td>{{ row.object }}</td>
-	<td><button class="btn btn-danger glyphicon glyphicon-remove" v-show="editableMode" @click="removeRow(uuid)"></button></td>
+	<td>
+		{{ row.object }}
+	</td>
+	<td>
+		<button class="btn btn-danger glyphicon glyphicon-remove" v-show="editableMode" @click="removeRow(uuid)"></button>
+	</td>
 </tr>
 </template>
 

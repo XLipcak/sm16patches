@@ -58,7 +58,7 @@
 					<h4 class="modal-title" id="myModalLabel">Recorded changes</h4>
 				</div>
 				<div class="modal-body">
-					<h4>Triples where <a href= "{{ url }}"> {{ url }} </a> is the subject:</h4>
+					<h4>Triples where <a href="{{ url }}"> {{ url }} </a> is the subject:</h4>
 					<h5>Added</h5>
 					<pre>{{ $refs.dataGridSubject.addedData | json }}</pre>
 					<h5>Updated</h5>
@@ -66,7 +66,7 @@
 					<h5>Deleted</h5>
 					<pre>{{ $refs.dataGridSubject.deletedData | json }}</pre>
 
-					<h4>Triples where <a href= "{{url}}"> {{ url }} </a> is the object:</h4>
+					<h4>Triples where <a href="{{ url }}"> {{ url }} </a> is the object:</h4>
 					<h5>Added</h5>
 					<pre>{{ $refs.dataGridObject.addedData | json }}</pre>
 					<h5>Updated</h5>
@@ -81,7 +81,9 @@
 				</div>
 			</div>
 		</div>
-	</div>				
+	</div>		
+
+	<!-- Successful request Modal -->		
 </template>
 
 
