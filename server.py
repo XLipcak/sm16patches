@@ -13,6 +13,7 @@ import os
 import time
 from patches import PatchRequestPersistence
 from datetime import datetime
+import codecs
 
 
 ## Handler classes
@@ -374,6 +375,9 @@ def make_app():
 
 
 if __name__ == "__main__":
+    if (os.name == 'nt'):
+        # UTF-8 support workaround for Windows console
+        codecs.register(lambda name: codecs.lookup('utf-8') if name == 'cp65001' else None)
     app = make_app()
     app.listen(8888)
     print("start server...")
