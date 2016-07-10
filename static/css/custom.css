@@ -21,7 +21,7 @@ td.second {
 input[type=text] {
     display: inline-block;
     width: 40%;
-    padding: 12px 20px;
+    padding: 6px 12px;
     margin: 8px 0;
     box-sizing: border-box;
 }
@@ -110,6 +110,15 @@ table.editable-datagrid>tbody>tr>td {
 
 table.editable-datagrid>tbody>tr>td input {
     margin: 0;
+}
+
+table.editable-datagrid>tbody>tr>td {
+    vertical-align: middle;
+}
+
+span.input-padding {
+    padding: 6px 12px;
+    color: gray;
 }
 
 /*

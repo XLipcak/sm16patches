@@ -17,7 +17,9 @@
 
 <!-- Renders 'subject' field as non-editable and 'predicate' and 'object' fields as editable. All other fields are skipped. -->
 <tr v-if="template == 'subject'">
-	<td>{{ row.subject }}</td>
+	<td>
+		<span class="input-padding">{{ row.subject }}</span>
+	</td>
 	<td>
 		<editable-cell
 			:editable-mode="editableMode"
@@ -64,7 +66,7 @@
 		></editable-cell>
 	</td>	
 	<td>
-		{{ row.object }}
+		<span class="input-padding">{{ row.object }}</span>
 	</td>
 	<td>
 		<button class="btn btn-danger glyphicon glyphicon-remove" v-show="editableMode" @click="removeRow(uuid)"></button>
