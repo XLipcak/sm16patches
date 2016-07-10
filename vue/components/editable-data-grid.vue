@@ -15,7 +15,7 @@
 				:empty-columns-left="mapping.columns.indexOf('subject') == -1 ? 1 : 0"
 				:empty-columns-right="mapping.columns.indexOf('object') == -1 ? 1 : 0"
 			></tr>
-			<tr v-for="(uuid, row) in rows | filterBy filterString | orderBy defaultOrder" 
+			<tr v-for="(uuid, row) in rows | filterBy filterByCallback | orderBy orderByCallback" 
 				is="editable-data-grid-row"
 				:columns="mapping.columns"
 				:uuid="uuid"
@@ -144,8 +144,28 @@ export default {
 			return _.mapObject(data, entry => this.mapping.read(entry), { data: data, mapping: this.mapping })
 		},
 
+		// Filters rows by chcking if they contain 'filterString'. If row is modified, it is never filtered out.
+		filterByCallback (row) {
+			if (this.filterString.trim() == '') {
+				return true
+			}
+
+			// Always keep, if data is updated
+			var uuid = row.$key
+			if (!_.isEqual(this.data[uuid], this.originalData[uuid])) {
+				return true
+			} 
+
+			// Filter out rows that doesn't contain 'filterString' as substring of any of its fields
+			return _.some(
+				row.$value,
+				function (value) { return value.indexOf(this.filterString) != -1 },
+				{ filterString: this.filterString }
+			)
+		},
+
 		// Provides ordering by 'metadata.isNew' DESC (new rows are always on top) and then 'predicate' ASC (a -> z)
-		defaultOrder (a, b) {
+		orderByCallback (a, b) {
 			// New rows to the front
 			if (a.$key.startsWith("new-") && !b.$key.startsWith("new-")) return -1
 			if (!a.$key.startsWith("new-") && b.$key.startsWith("new-")) return 1
