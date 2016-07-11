@@ -43,7 +43,7 @@
 		<div class="panel panel-default panel-bottom">
 			<div class="panel-body text-center">
 				<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#patchModal">
-					View changes
+					Submit Changes
 				</button>
 			</div>
 		</div>	
@@ -120,7 +120,7 @@
 				</div>
 				<div class="modal-footer">
 					<div class="text-center">
-						<button id="submitPatch" type="button" class="btn btn-primary" v-on:click="postPatchRequest">Submit Patch Request</button>
+						<button id="submitPatch" type="button" class="btn btn-primary" v-on:click="postPatchRequest">Save Patch Request</button>
 					</div>
 				</div>
 			</div>
