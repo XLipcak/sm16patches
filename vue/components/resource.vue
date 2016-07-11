@@ -43,7 +43,7 @@
 		<div class="panel panel-default panel-bottom">
 			<div class="panel-body text-center">
 				<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#patchModal">
-					View changes
+					Submit
 				</button>
 			</div>
 		</div>	
@@ -56,6 +56,11 @@
 				<div class="modal-header">
 					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 					<h4 class="modal-title" id="myModalLabel">Recorded changes</h4>
+					<div>
+						<span>
+							Here you can take a look at the changes you've made. If these are as intended go on and submit your request!
+						</span>
+					</div>
 				</div>
 				<div class="modal-body">
 					<h4>Triples where <a href="{{ url }}"> {{ url }} </a> is the subject:</h4>
