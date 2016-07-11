@@ -159,7 +159,7 @@ export default {
 			// Filter out rows that doesn't contain 'filterString' as substring of any of its fields
 			return _.some(
 				row.$value,
-				function (value) { return value.indexOf(this.filterString) != -1 },
+				function (value) { return value.toLowerCase().indexOf(this.filterString.toLowerCase()) != -1 },
 				{ filterString: this.filterString }
 			)
 		},
