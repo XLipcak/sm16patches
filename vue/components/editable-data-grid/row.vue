@@ -17,10 +17,10 @@
 
 <!-- Renders 'subject' field as non-editable and 'predicate' and 'object' fields as editable. All other fields are skipped. -->
 <tr v-if="template == 'subject'">
-	<td>
+	<td class="partoftriple">
 		<span class="input-padding">{{ row.subject }}</span>
 	</td>
-	<td>
+	<td class="partoftriple">
 		<editable-cell
 			:editable-mode="editableMode"
 			column="predicate"
@@ -30,7 +30,7 @@
 			:uuid="uuid + 'predicate'"
 		></editable-cell>
 	</td>
-	<td>
+	<td class="partoftriple">
 		<editable-cell
 			:editable-mode="editableMode"
 			column="object"
@@ -46,7 +46,7 @@
 
 <!-- Renders 'object' field as non-editable and 'subject' and 'predicate' fields as editable. All other fields are skipped. -->
 <tr v-if="template == 'object'">
-	<td>
+	<td class="partoftriple">
 		<editable-cell
 			:editable-mode="editableMode"
 			column="subject"
@@ -55,7 +55,7 @@
 			:datatype="row.objectDatatype"
 		></editable-cell>
 	</td>
-	<td>
+	<td class="partoftriple">
 		<editable-cell
 			:editable-mode="editableMode"
 			column="predicate"
@@ -65,7 +65,7 @@
 			:uuid="uuid + 'predicate'"
 		></editable-cell>
 	</td>	
-	<td>
+	<td class="partoftriple">
 		<span class="input-padding">{{ row.object }}</span>
 	</td>
 	<td>
