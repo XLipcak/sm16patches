@@ -1,0 +1,7 @@
+Resource: http://141.89.225.50:8891/resource/Isaac_Newton
+
+Instructions:
+
+1) Currently Isaac Newton isn't given any name in the resource. Add "Isaac Newton" as his name!
+2) A triples in the resource incorrectly states that Isaac Newton is born on 4th January 1643. As the correct birthdate is already provided, delete the incorrect birthdate!
+3) The resource states that Isaac Newton is related to Hasso Plattner. Change the triple so that Isaac Newton is related to Catherine Barton!

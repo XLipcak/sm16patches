@@ -1,8 +1,9 @@
 <template xmlns:v-on="http://www.w3.org/1999/xhtml">
 	<h1>RDF</h1>
 	<h2>About: <a href= "{{ url }}"> {{url}} </a> </h2>
+	<br><br>
 	<div class="form-group">
-		<label for="searchText">Filter:</label>
+		<label for="searchText" style="font-size: 15pt;">Filter:</label>
 		<input type="hidden" name="url" value="{{url}}" />
 		<input v-model="searchString" id="searchText" name="searchText" placeholder="Search..." value="{{searchText}}" class="form-control" type="text" />
 	</div>
