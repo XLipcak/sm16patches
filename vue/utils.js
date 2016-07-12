@@ -38,11 +38,9 @@ export default {
 	 * Performs autocomplete of RDF URL's
 	 */
 	autocomplete (column, uuid) {
-		console.log(column, uuid)
 		if (column !== "predicate") return null;
 
 		var searchString = $("#" + uuid + "input").val()
-		console.log(searchString)
 		searchString = searchString.split("/").slice(-1)[0]
 
 		if (searchString === "") {
