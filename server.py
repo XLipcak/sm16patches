@@ -237,7 +237,8 @@ def buildNaiveJsonFromGraph(graph, url, filename):
     for sub, pred, obj in graph:
         if sub not in jsonDict["data"]:
             jsonDict["data"][sub] = {}
-        jsonDict["data"][sub][pred] = []
+        if pred not in jsonDict["data"][sub]:
+            jsonDict["data"][sub][pred] = []
         if isinstance(obj, URIRef):
             jsonDict["data"][sub][pred].append(
                 {
