@@ -4,7 +4,7 @@
 	<td>
 		<input
 			class="editable-mode form-control"
-			v-model="predicate"
+			v-model="newRow['predicate']"
 			placeholder="Predicate (type to get suggestions)"
 			:id="'suggest1input'"
 			v-on:keyup="autocomplete(columns[0], 'suggest1')"
@@ -13,7 +13,7 @@
 	<td>
 		<input
 			class="editable-mode form-control"
-			v-model="object"
+			v-model="newRow['object']"
 			placeholder="Object"
 			:id="this.uuid + 'input'"
 			v-on:keyup="autocomplete(columns[1], uuid)"
@@ -24,7 +24,7 @@
 	<td>
 		<input
 			class="editable-mode form-control"
-			v-model="subject"
+			v-model="newRow['subject']"
 			placeholder="Subject"
 			:id="this.uuid + 'input'"
 			v-on:keyup="autocomplete(columns[0], uuid)"
@@ -33,7 +33,7 @@
 	<td>
 		<input
 			class="editable-mode form-control"
-			v-model="predicate"
+			v-model="newRow['predicate']"
 			placeholder="Predicate (type to get suggestions)"
 			:id="'suggest2input'"
 			v-on:keyup="autocomplete(columns[1], 'suggest2')"
