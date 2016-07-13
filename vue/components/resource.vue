@@ -65,7 +65,7 @@
 				</div>
 				<div class="modal-body">
 					<h4>Triples where <a href="{{ url }}"> {{ url }} </a> is the subject:</h4>
-					<table class="table recorded-changes">
+					<table v-if="$refs.dataGridSubject" class="table recorded-changes">
 						<tr>
 							<th>Subject</th>
 							<th>Predicate</th>
@@ -95,7 +95,7 @@
 					</table>
 
 					<h4>Triples where <a href="{{ url }}"> {{ url }} </a> is the object:</h4>
-					<table class="table recorded-changes">
+					<table v-if="$refs.dataGridObject" class="table recorded-changes">
 						<tr>
 							<th>Subject</th>
 							<th>Predicate</th>
