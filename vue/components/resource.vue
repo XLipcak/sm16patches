@@ -43,97 +43,97 @@
 	<div class="footer navbar-fixed-bottom">
 		<div class="panel panel-default panel-bottom">
 			<div class="panel-body text-center">
-				<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#patchModal">
+				<button type="button" class="btn btn-primary" @click="modal.recordedChanges = true">
 					Submit Changes
 				</button>
 			</div>
 		</div>	
 	</div>
 
-	<!-- Recorded chagnes Modal -->
-	<div class="modal fade" id="patchModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-		<div class="modal-dialog modal-recorded-changes" role="document">
-			<div class="modal-content">
-				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-					<h4 class="modal-title" id="myModalLabel">Recorded changes</h4>
-					<div>
-						<span>
-							Here you can take a look at the changes you've made. If these are as intended go on and submit your request!
-						</span>
-					</div>
-				</div>
-				<div class="modal-body">
-					<h4>Triples where <a href="{{ url }}"> {{ url }} </a> is the subject:</h4>
-					<table v-if="$refs.dataGridSubject" class="table recorded-changes">
-						<tr>
-							<th>Subject</th>
-							<th>Predicate</th>
-							<th>Object</th>
-						</tr>
+	<!-- Recorded chagnes modal -->
+	<modal title="Recorded changes" :show.sync="modal.recordedChanges" :class="'modal-recorded-changes'" effect="fade" width="800">
+		<div slot="modal-body" class="modal-body">
+			<alert type="info">
+				Here you can take a look at the changes you've made. If these are as intended go on and submit your request!
+			</alert>		
+			<h4>Triples where <a href="{{ url }}"> {{ url }} </a> is the subject:</h4>
+			<table v-if="$refs.dataGridSubject" class="table recorded-changes">
+				<tr>
+					<th>Subject</th>
+					<th>Predicate</th>
+					<th>Object</th>
+				</tr>
 
-						<!-- Added -->
-						<tr class="added" v-for="triple in $refs.dataGridSubject.addedData">
-							<td>{{ triple.subject }}</td>
-							<td>{{ triple.predicate }}</td>
-							<td>{{ triple.object }}</td>
-						</tr>
+				<!-- Added -->
+				<tr class="added" v-for="triple in $refs.dataGridSubject.addedData">
+					<td>{{ triple.subject }}</td>
+					<td>{{ triple.predicate }}</td>
+					<td>{{ triple.object }}</td>
+				</tr>
 
-						<!-- Updated -->
-						<tr class="updated" v-for="triple in $refs.dataGridSubject.updatedData">
-							<td>{{ triple.to.subject }}</td>
-							<td>{{ triple.to.predicate }}</td>
-							<td>{{ triple.to.object }}</td>
-						</tr>
+				<!-- Updated -->
+				<tr class="updated" v-for="triple in $refs.dataGridSubject.updatedData">
+					<td>{{ triple.to.subject }}</td>
+					<td>{{ triple.to.predicate }}</td>
+					<td>{{ triple.to.object }}</td>
+				</tr>
 
-						<!-- Deleted -->
-						<tr class="deleted" v-for="triple in $refs.dataGridSubject.deletedData">
-							<td>{{ triple.subject }}</td>
-							<td>{{ triple.predicate }}</td>
-							<td>{{ triple.object }}</td>
-						</tr>
-					</table>
+				<!-- Deleted -->
+				<tr class="deleted" v-for="triple in $refs.dataGridSubject.deletedData">
+					<td>{{ triple.subject }}</td>
+					<td>{{ triple.predicate }}</td>
+					<td>{{ triple.object }}</td>
+				</tr>
+			</table>
 
-					<h4>Triples where <a href="{{ url }}"> {{ url }} </a> is the object:</h4>
-					<table v-if="$refs.dataGridObject" class="table recorded-changes">
-						<tr>
-							<th>Subject</th>
-							<th>Predicate</th>
-							<th>Object</th>
-						</tr>
+			<h4>Triples where <a href="{{ url }}"> {{ url }} </a> is the object:</h4>
+			<table v-if="$refs.dataGridObject" class="table recorded-changes">
+				<tr>
+					<th>Subject</th>
+					<th>Predicate</th>
+					<th>Object</th>
+				</tr>
 
-						<!-- Added -->
-						<tr class="added" v-for="triple in $refs.dataGridObject.addedData">
-							<td>{{ triple.subject }}</td>
-							<td>{{ triple.predicate }}</td>
-							<td>{{ triple.object }}</td>
-						</tr>
+				<!-- Added -->
+				<tr class="added" v-for="triple in $refs.dataGridObject.addedData">
+					<td>{{ triple.subject }}</td>
+					<td>{{ triple.predicate }}</td>
+					<td>{{ triple.object }}</td>
+				</tr>
 
-						<!-- Updated -->
-						<tr class="updated" v-for="triple in $refs.dataGridObject.updatedData">
-							<td>{{ triple.to.subject }}</td>
-							<td>{{ triple.to.predicate }}</td>
-							<td>{{ triple.to.object }}</td>
-						</tr>
+				<!-- Updated -->
+				<tr class="updated" v-for="triple in $refs.dataGridObject.updatedData">
+					<td>{{ triple.to.subject }}</td>
+					<td>{{ triple.to.predicate }}</td>
+					<td>{{ triple.to.object }}</td>
+				</tr>
 
-						<!-- Deleted -->
-						<tr class="deleted" v-for="triple in $refs.dataGridObject.deletedData">
-							<td>{{ triple.subject }}</td>
-							<td>{{ triple.predicate }}</td>
-							<td>{{ triple.object }}</td>
-						</tr>
-					</table>
-				</div>
-				<div class="modal-footer">
-					<div class="text-center">
-						<button id="submitPatch" type="button" class="btn btn-primary" v-on:click="postPatchRequest">Save Patch Request</button>
-					</div>
-				</div>
+				<!-- Deleted -->
+				<tr class="deleted" v-for="triple in $refs.dataGridObject.deletedData">
+					<td>{{ triple.subject }}</td>
+					<td>{{ triple.predicate }}</td>
+					<td>{{ triple.object }}</td>
+				</tr>
+			</table>		
+		</div>
+		<div slot="modal-footer" class="modal-footer">
+			<div class="text-center">
+				<button id="submitPatch" type="button" class="btn btn-primary" v-on:click="postPatchRequest">Save Patch Request</button>
 			</div>
 		</div>
-	</div>		
+	</modal>
 
-	<!-- Successful request Modal -->		
+	<!-- Request response modal -->	
+	<modal :show.sync="modal.requestResponse" effect="fade">
+		<div slot="modal-body" class="modal-body">
+			<span class="success-message">
+				<span class="glyphicon glyphicon-ok"></span> {{ requestResponse }}
+			</span class="success-message">
+		</div>
+		<div slot="modal-footer" class="modal-footer">
+			<button type="button" class="btn btn-default" @click='modal.requestResponse	 = false'>Close</button>
+		</div>		
+	</modal>	
 </template>
 
 
@@ -159,6 +159,11 @@ export default {
 		var url = this.url
 
 		return {
+			modal: {
+				recordedChanges: false,
+				requestResponse: false
+			},
+			requestResponse: null,
 			isEditableMode: true,
 			searchString: "",
 			urlAsSubject: {
@@ -279,9 +284,10 @@ export default {
 					_.map(this.$refs.dataGridObject.updatedData, d => d.from)
 				)
 
+				var vueContext = this
 				$.post("/patch_requests", JSON.stringify(patchJson), function(response) {
-					//TODO: nicer way of notification
-					alert(response)
+					vueContext.requestResponse = response
+					vueContext.modal.requestResponse = true
 				})
 			}
 		}

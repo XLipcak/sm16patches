@@ -124,7 +124,7 @@ span.input-padding {
 /*
  * Recorded Changes modal
  */
-.modal-recorded-changes {
+.modal-recorded-changes .modal-dialog {
     width: 100%;
 }
 
@@ -147,3 +147,10 @@ td.partoftriple {
     max-width: 33%;
     width: 33%;
 }
+
+/**
+ * Request result modal
+ */ 
+ .success-message {
+    font-size: 1.5em;
+ }
