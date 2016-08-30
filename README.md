@@ -1,4 +1,18 @@
 ## Setup
+
+This project uses the Tornado Web framework (Python), RDFlib (Python) and Vue.js.
+
+Recommended Python version is 2.7.10.
+
+To install Tornado and RDFlib just run
+
+```
+pip install tornado
+pip install rdflib
+```
+
+Please note that Tornado does NOT run natively on Windows.
+
 Install Node.JS: 
   * Install at least version 4.x.x 
   * For Windows or Mac, download and isntall the binaries here: https://nodejs.org/en/download/
